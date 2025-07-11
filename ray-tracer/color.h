@@ -3,11 +3,13 @@
 
 class Color {
 private:
-	const int r;
-	const int g;
-	const int b;
+	int r;
+	int g;
+	int b;
 
 public:
+	Color() : r(0), g(0), b(0) {
+	}
 	Color(int _r, int _g, int _b) : r(_r), g(_g), b(_b) {
 	}
 	int get_red() const { return r; }
