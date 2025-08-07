@@ -3,9 +3,9 @@
 
 class Color {
 private:
-	int r;
-	int g;
-	int b;
+	short r;
+	short g;
+	short b;
 
 public:
 	Color() : r(0), g(0), b(0) {

@@ -5,7 +5,13 @@
 #include "color.h"
 #include "image.h"
 
-void write_n_bytes(std::vector<std::byte>& vec, int n, int data) {
+const int LEFT = -1;
+const int RIGHT = 1;
+const int BOTTOM = -1;
+const int TOP = 1;
+const int FOCAL_LENGTH = 1;
+
+static void write_n_bytes(std::vector<std::byte>& vec, int n, int data) {
 	// Increasing offset due to little-endian ordering (LSB first)
 	int offset = 0;
 	for (int i = 0; i < n; i++) {
@@ -79,7 +85,7 @@ const Color Color::BLUE = Color(0, 0, 255);
 
 int main()
 {
-	Image img = Image(32, 32);
+	Image img = Image(1600, 1600);
 	for (int i = 4; i < 16; i++) {
 		for (int j = 16; j < 20; j++) {
 			img.draw(i, j, Color::RED);

@@ -1,16 +1,19 @@
 #pragma once
-#include <array>
+#include <vector>
 #include <stdexcept>
 #include "color.h"
 
 class Image {
 private:
-	std::array<Color, 200 * 200> data;
+	std::vector<Color> data;
 	const int width;
 	const int height;
 
 public:
 	Image(int _width, int _height) : width(_width), height(_height) {
+		for (int i = 0; i < _width * _height; i++) {
+			data.push_back(Color());
+		}
 	}
 	inline void draw(int x, int y, Color color) {
 		if (x >= height) throw std::invalid_argument("Height exceeded");
