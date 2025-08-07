@@ -10,11 +10,11 @@ private:
 public:
 	Color() : r(0), g(0), b(0) {
 	}
-	Color(int _r, int _g, int _b) : r(_r), g(_g), b(_b) {
+	Color(short _r, short _g, short _b) : r(_r), g(_g), b(_b) {
 	}
-	int get_red() const { return r; }
-	int get_green() const { return g; }
-	int get_blue() const { return b; }
+	short get_red() const { return r; }
+	short get_green() const { return g; }
+	short get_blue() const { return b; }
 	inline std::string to_string() const {
 		std::string result = "RGB(";
 		result += std::to_string(r);
@@ -24,6 +24,10 @@ public:
 		result += std::to_string(b);
 		result += ")";
 		return result;
+	}
+
+	inline Color operator*(double d) const {
+		return Color((double) r * d, (double) g * d, (double) b * d);
 	}
 
 	static const Color RED;

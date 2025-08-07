@@ -1,6 +1,7 @@
 ﻿#include "ray-tracer.h"
 #include <vector>
 #include <array>
+#include <algorithm>
 #include <fstream>
 #include "color.h"
 #include "image.h"
@@ -15,6 +16,8 @@ const double FOCAL_LENGTH = 1;
 const Vec3 ORIGIN = Vec3(0, 0, 0);
 const int NO_PIXELS = 800;
 const ViewType VIEW_TYPE = PERSPECTIVE;
+const Vec3 LIGHT_DIRECTION = Vec3(0, 1, 1);
+const double LIGHT_INTENSITY = 1;
 
 static Ray compute_ray_for_pixel(int x, int y) {
 	const double u = LEFT + ((double)y / (double)NO_PIXELS) * (RIGHT - LEFT);
@@ -28,6 +31,14 @@ static Ray compute_ray_for_pixel(int x, int y) {
 		Vec3 ray_origin = Vec3(u, v, 0) + ORIGIN;
 		return Ray(ray_origin, Vec3(0, 0, -1));
 	}
+}
+
+static Color shade(const Sphere s, Vec3 intersection) {
+	Vec3 normal = (intersection - s.get_center()).to_normalized();
+	Vec3 light = -LIGHT_DIRECTION.to_normalized();
+	double cosine = std::max(0.0, normal * light);
+	if (cosine <= 0.1) return Color(0, 0, 0);
+	return s.get_color() * LIGHT_INTENSITY * cosine;
 }
 
 static void write_n_bytes(std::vector<std::byte>& vec, int n, int data) {
@@ -118,10 +129,12 @@ int main()
 			Color top_color = Color(0, 0, 0); // Background color
 
 			for (const Sphere s : objects) {
-				const double t = s.ray_intersection(compute_ray_for_pixel(i, j));
+				const Ray current_ray = compute_ray_for_pixel(i, j);
+				const double t = s.ray_intersection(current_ray);
+				const Vec3 intersection = current_ray.origin + current_ray.direction * t;
 				if (t < min_depth && t > 0) {
 					min_depth = t;
-					top_color = s.get_color();
+					top_color = shade(s, intersection);
 				}
 			}
 

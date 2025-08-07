@@ -12,6 +12,8 @@ private:
 public:
 	Sphere(Vec3 _center, double _radius, Color _color) : center(_center), radius(_radius), color(_color) {
 	}
+	inline Vec3 get_center() const { return center; }
+	inline double get_radius() const { return radius; }
 	inline Color get_color() const { return color; }
 	inline double ray_intersection(Ray r) const {
 		const double A = r.direction * r.direction;
