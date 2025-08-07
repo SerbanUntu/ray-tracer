@@ -4,7 +4,7 @@
 #include "util/vec3.h"
 
 enum ViewType {
-	ORTOGRAPHIC,
+	ORTHOGRAPHIC,
 	PERSPECTIVE
 };
 

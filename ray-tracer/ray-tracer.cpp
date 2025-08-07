@@ -14,6 +14,21 @@ const int TOP = 1;
 const double FOCAL_LENGTH = 1;
 const Vec3 ORIGIN = Vec3(0, 0, 0);
 const int NO_PIXELS = 800;
+const ViewType VIEW_TYPE = PERSPECTIVE;
+
+static Ray compute_ray_for_pixel(int x, int y) {
+	const double u = LEFT + ((double)y / (double)NO_PIXELS) * (RIGHT - LEFT);
+	const double v = TOP + ((double)x / (double)NO_PIXELS) * (BOTTOM - TOP);
+
+	if (VIEW_TYPE == PERSPECTIVE) {
+		Vec3 ray_direction = Vec3(u, v, -FOCAL_LENGTH);
+		return Ray(ORIGIN, ray_direction);
+	}
+	else if (VIEW_TYPE == ORTHOGRAPHIC) {
+		Vec3 ray_origin = Vec3(u, v, 0) + ORIGIN;
+		return Ray(ray_origin, Vec3(0, 0, -1));
+	}
+}
 
 static void write_n_bytes(std::vector<std::byte>& vec, int n, int data) {
 	// Increasing offset due to little-endian ordering (LSB first)
@@ -98,15 +113,12 @@ int main()
 
 	for (int i = 0; i < NO_PIXELS; i++) {
 		for (int j = 0; j < NO_PIXELS; j++) {
-			const double u = LEFT + ((double)j / (double)NO_PIXELS) * (RIGHT - LEFT);
-			const double v = TOP + ((double)i / (double)NO_PIXELS) * (BOTTOM - TOP);
-			Vec3 ray_direction = Vec3(u, v, -FOCAL_LENGTH);
 
 			double min_depth = DBL_MAX;
 			Color top_color = Color(0, 0, 0); // Background color
 
 			for (const Sphere s : objects) {
-				const double t = s.ray_intersection(Ray(ORIGIN, ray_direction));
+				const double t = s.ray_intersection(compute_ray_for_pixel(i, j));
 				if (t < min_depth && t > 0) {
 					min_depth = t;
 					top_color = s.get_color();
