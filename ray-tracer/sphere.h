@@ -7,14 +7,14 @@ class Sphere {
 private:
 	Vec3 center;
 	double radius;
-	Color color;
+	Vec3 color;
 
 public:
-	Sphere(Vec3 _center, double _radius, Color _color) : center(_center), radius(_radius), color(_color) {
+	Sphere(Vec3 _center, double _radius, Vec3 _color) : center(_center), radius(_radius), color(_color) {
 	}
 	inline Vec3 get_center() const { return center; }
 	inline double get_radius() const { return radius; }
-	inline Color get_color() const { return color; }
+	inline Vec3 get_color() const { return color; }
 	inline double ray_intersection(Ray r) const {
 		const double A = r.direction * r.direction;
 		const double B = r.direction * (r.origin - center) * 2;

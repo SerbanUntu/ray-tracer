@@ -1,9 +1,11 @@
 ﻿#include "ray-tracer.h"
 #include <vector>
 #include <array>
+#include <math.h>
 #include <algorithm>
 #include <fstream>
-#include "color.h"
+#include <cstddef>
+#include <cstdint>
 #include "image.h"
 #include "sphere.h"
 #include "util/vec3.h"
@@ -19,6 +21,10 @@ const ViewType VIEW_TYPE = PERSPECTIVE;
 const Vec3 LIGHT_DIRECTION = Vec3(0, 1, 1);
 const double LIGHT_INTENSITY = 1;
 
+const Vec3 RED = Vec3(1, 0, 0);
+const Vec3 GREEN = Vec3(0, 1, 0);
+const Vec3 BLUE = Vec3(0, 0, 1);
+
 static Ray compute_ray_for_pixel(int x, int y) {
 	const double u = LEFT + ((double)y / (double)NO_PIXELS) * (RIGHT - LEFT);
 	const double v = TOP + ((double)x / (double)NO_PIXELS) * (BOTTOM - TOP);
@@ -33,11 +39,10 @@ static Ray compute_ray_for_pixel(int x, int y) {
 	}
 }
 
-static Color shade(const Sphere s, Vec3 intersection) {
+static Vec3 shade(const Sphere s, Vec3 intersection) {
 	Vec3 normal = (intersection - s.get_center()).to_normalized();
 	Vec3 light = -LIGHT_DIRECTION.to_normalized();
 	double cosine = std::max(0.0, normal * light);
-	if (cosine <= 0.1) return Color(0, 0, 0);
 	return s.get_color() * LIGHT_INTENSITY * cosine;
 }
 
@@ -48,6 +53,14 @@ static void write_n_bytes(std::vector<std::byte>& vec, int n, int data) {
 		vec.push_back(std::byte((data >> offset) & 255));
 		offset += 8;
 	}
+}
+
+static std::byte doubleToByte(double value) {
+	if (std::isnan(value) || value < 0.0) value = 0.0;
+	if (value > 1.0) value = 1.0;
+	int intVal = static_cast<int>(value * 255.0 + 0.5);
+	intVal = std::clamp(intVal, 0, 255);
+	return static_cast<std::byte>(static_cast<uint8_t>(intVal));
 }
 
 void Image::generateBmp(std::string file_name) {
@@ -98,38 +111,35 @@ void Image::generateBmp(std::string file_name) {
 	write_n_bytes(image_bytes, 4, no_important_colors);
 
 	for (int i = 0; i < width * height; i++) {
-		image_bytes.push_back(std::byte(data[i].get_blue()));
-		image_bytes.push_back(std::byte(data[i].get_green()));
-		image_bytes.push_back(std::byte(data[i].get_red()));
+		image_bytes.push_back(doubleToByte(data[i].z));
+		image_bytes.push_back(doubleToByte(data[i].y));
+		image_bytes.push_back(doubleToByte(data[i].x));
 	}
 
-	std::ofstream image_file(file_name);
+	// std::ios::binary needed for binary data instead of text data on Windows
+	std::ofstream image_file(file_name, std::ios::binary);
 
 	image_file.write(reinterpret_cast<const char*>(image_bytes.data()), image_bytes.size());
 	image_file.close();
 }
 
-const Color Color::RED = Color(255, 0, 0);
-const Color Color::GREEN = Color(0, 255, 0);
-const Color Color::BLUE = Color(0, 0, 255);
-
 int main()
 {
 	Image img = Image(NO_PIXELS, NO_PIXELS);
 	const std::array<Sphere, 3> objects = {
-		Sphere(Vec3(0, 4, -10), 4, Color::RED),
-		Sphere(Vec3(0, 0, -20), 4, Color::GREEN),
-		Sphere(Vec3(0, -4, -30), 4, Color::BLUE),
+		Sphere(Vec3(0, 4, -10), 4, RED),
+		Sphere(Vec3(0, 0, -20), 4, GREEN),
+		Sphere(Vec3(0, -4, -30), 4, BLUE),
 	};
 
 	for (int i = 0; i < NO_PIXELS; i++) {
 		for (int j = 0; j < NO_PIXELS; j++) {
 
 			double min_depth = DBL_MAX;
-			Color top_color = Color(0, 0, 0); // Background color
+			Vec3 top_color = Vec3(0, 0, 0); // Background color
+			const Ray current_ray = compute_ray_for_pixel(i, j);
 
 			for (const Sphere s : objects) {
-				const Ray current_ray = compute_ray_for_pixel(i, j);
 				const double t = s.ray_intersection(current_ray);
 				const Vec3 intersection = current_ray.origin + current_ray.direction * t;
 				if (t < min_depth && t > 0) {
