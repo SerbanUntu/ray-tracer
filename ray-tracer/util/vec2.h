@@ -2,11 +2,10 @@
 #include<math.h>
 
 class Vec2 {
-private:
+public:
 	double x;
 	double y;
 
-public:
 	Vec2(double _x, double _y) : x(_x), y(_y) {
 	}
 	inline void normalize() {
@@ -16,5 +15,15 @@ public:
 	}
 	inline double length() const {
 		return sqrt(x * x + y * y);
+	}
+
+	Vec2 operator+(Vec2 const& other) {
+		return Vec2(x + other.x, y + other.y);
+	}
+	Vec2 operator-(Vec2 const& other) {
+		return Vec2(x - other.x, y - other.y);
+	}
+	double operator*(Vec2 const& other) {
+		return x * other.x + y * other.y;
 	}
 };

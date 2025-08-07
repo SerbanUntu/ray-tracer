@@ -1,8 +1,15 @@
-﻿// ray-tracer.h : Include file for standard system include files,
-// or project specific include files.
-
-#pragma once
+﻿#pragma once
 
 #include <iostream>
+#include "util/vec3.h"
 
-// TODO: Reference additional headers your program requires here.
+enum ViewType {
+	ORTOGRAPHIC,
+	PERSPECTIVE
+};
+
+struct Ray {
+	Vec3 origin;
+	Vec3 direction;
+};
+

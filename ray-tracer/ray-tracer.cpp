@@ -4,12 +4,16 @@
 #include <fstream>
 #include "color.h"
 #include "image.h"
+#include "sphere.h"
+#include "util/vec3.h"
 
 const int LEFT = -1;
 const int RIGHT = 1;
 const int BOTTOM = -1;
 const int TOP = 1;
-const int FOCAL_LENGTH = 1;
+const double FOCAL_LENGTH = 1;
+const Vec3 ORIGIN = Vec3(0, 0, 0);
+const int NO_PIXELS = 800;
 
 static void write_n_bytes(std::vector<std::byte>& vec, int n, int data) {
 	// Increasing offset due to little-endian ordering (LSB first)
@@ -85,10 +89,31 @@ const Color Color::BLUE = Color(0, 0, 255);
 
 int main()
 {
-	Image img = Image(1600, 1600);
-	for (int i = 4; i < 16; i++) {
-		for (int j = 16; j < 20; j++) {
-			img.draw(i, j, Color::RED);
+	Image img = Image(NO_PIXELS, NO_PIXELS);
+	const std::array<Sphere, 3> objects = {
+		Sphere(Vec3(0, 4, -10), 4, Color::RED),
+		Sphere(Vec3(0, 0, -20), 4, Color::GREEN),
+		Sphere(Vec3(0, -4, -30), 4, Color::BLUE),
+	};
+
+	for (int i = 0; i < NO_PIXELS; i++) {
+		for (int j = 0; j < NO_PIXELS; j++) {
+			const double u = LEFT + ((double)j / (double)NO_PIXELS) * (RIGHT - LEFT);
+			const double v = TOP + ((double)i / (double)NO_PIXELS) * (BOTTOM - TOP);
+			Vec3 ray_direction = Vec3(u, v, -FOCAL_LENGTH);
+
+			double min_depth = DBL_MAX;
+			Color top_color = Color(0, 0, 0); // Background color
+
+			for (const Sphere s : objects) {
+				const double t = s.ray_intersection(Ray(ORIGIN, ray_direction));
+				if (t < min_depth && t > 0) {
+					min_depth = t;
+					top_color = s.get_color();
+				}
+			}
+
+			img.draw(i, j, top_color);
 		}
 	}
 	img.generateBmp("my_file.bmp");
