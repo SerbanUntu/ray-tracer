@@ -16,14 +16,17 @@ const int BOTTOM = -1;
 const int TOP = 1;
 const double FOCAL_LENGTH = 1;
 const Vec3 ORIGIN = Vec3(0, 0, 0);
-const int NO_PIXELS = 800;
+const int NO_PIXELS = 800; // Padding not implemented yet. Must be multiple of 4.
 const ViewType VIEW_TYPE = PERSPECTIVE;
-const Vec3 LIGHT_DIRECTION = Vec3(0, 1, 1);
+const Vec3 LIGHT_DIRECTION = Vec3(-1, 1, 0);
 const double LIGHT_INTENSITY = 1;
+const Vec3 AMBIENT_COLOR = Vec3(0, 0.1, 0.3);
+const double AMBIENT_LIGHT_INTENSITY = 0.2;
+const Vec3 BACKGROUND_COLOR = Vec3(0, 0, 0);
 
-const Vec3 RED = Vec3(1, 0, 0);
-const Vec3 GREEN = Vec3(0, 1, 0);
-const Vec3 BLUE = Vec3(0, 0, 1);
+const Material RED = Material(Vec3(1, 0, 0), Vec3(1, 1, 1), 10);
+const Material GREEN = Material(Vec3(0, 1, 0), Vec3(1, 1, 1), 100);
+const Material BLUE = Material(Vec3(0, 0, 1), Vec3(1, 1, 1), 1000);
 
 static Ray compute_ray_for_pixel(int x, int y) {
 	const double u = LEFT + ((double)y / (double)NO_PIXELS) * (RIGHT - LEFT);
@@ -39,11 +42,23 @@ static Ray compute_ray_for_pixel(int x, int y) {
 	}
 }
 
-static Vec3 shade(const Sphere s, Vec3 intersection) {
+static Vec3 shade(const Sphere s, Vec3 intersection, Vec3 ray_direction) {
+	Material mat = s.get_material();
+
 	Vec3 normal = (intersection - s.get_center()).to_normalized();
 	Vec3 light = -LIGHT_DIRECTION.to_normalized();
-	double cosine = std::max(0.0, normal * light);
-	return s.get_color() * LIGHT_INTENSITY * cosine;
+	Vec3 view = -ray_direction;
+	Vec3 half_vector = (view + light).to_normalized();
+
+	double diffuse_cosine = std::max(0.0, normal * light);
+	Vec3 diffuse_component = mat.diffuse * LIGHT_INTENSITY * diffuse_cosine;
+
+	double specular_cosine = std::pow(std::max(0.0, normal * half_vector), mat.phong_exp);
+	Vec3 specular_component = mat.specular * LIGHT_INTENSITY * specular_cosine;
+
+	Vec3 ambient_component = AMBIENT_COLOR * AMBIENT_LIGHT_INTENSITY;
+
+	return diffuse_component + specular_component + ambient_component;
 }
 
 static void write_n_bytes(std::vector<std::byte>& vec, int n, int data) {
@@ -136,7 +151,7 @@ int main()
 		for (int j = 0; j < NO_PIXELS; j++) {
 
 			double min_depth = DBL_MAX;
-			Vec3 top_color = Vec3(0, 0, 0); // Background color
+			Vec3 top_color = BACKGROUND_COLOR;
 			const Ray current_ray = compute_ray_for_pixel(i, j);
 
 			for (const Sphere s : objects) {
@@ -144,7 +159,7 @@ int main()
 				const Vec3 intersection = current_ray.origin + current_ray.direction * t;
 				if (t < min_depth && t > 0) {
 					min_depth = t;
-					top_color = shade(s, intersection);
+					top_color = shade(s, intersection, current_ray.direction);
 				}
 			}
 

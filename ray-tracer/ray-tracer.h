@@ -8,6 +8,12 @@ enum ViewType {
 	PERSPECTIVE
 };
 
+struct Material {
+	Vec3 diffuse;
+	Vec3 specular;
+	int phong_exp;
+};
+
 struct Ray {
 	Vec3 origin;
 	Vec3 direction;
