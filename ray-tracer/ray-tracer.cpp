@@ -24,9 +24,12 @@ const Vec3 AMBIENT_COLOR = Vec3(0, 0.1, 0.3);
 const double AMBIENT_LIGHT_INTENSITY = 0.2;
 const Vec3 BACKGROUND_COLOR = Vec3(0, 0, 0);
 
-const Material RED = Material(Vec3(1, 0, 0), Vec3(1, 1, 1), 10);
-const Material GREEN = Material(Vec3(0, 1, 0), Vec3(1, 1, 1), 100);
-const Material BLUE = Material(Vec3(0, 0, 1), Vec3(1, 1, 1), 1000);
+const bool IS_SHADING_THRESHOLDED = true;
+const double THRESHOLDED_SHADING_DEGREES = 4.0;
+
+const Material YELLOW = Material(Vec3(1, 1, 0), Vec3(1, 1, 1), 10);
+const Material CYAN = Material(Vec3(0, 1, 1), Vec3(1, 1, 1), 100);
+const Material MAGENTA = Material(Vec3(1, 0, 1), Vec3(1, 1, 1), 1000);
 
 static Ray compute_ray_for_pixel(int x, int y) {
 	const double u = LEFT + ((double)y / (double)NO_PIXELS) * (RIGHT - LEFT);
@@ -51,11 +54,15 @@ static Vec3 shade(const Sphere s, Vec3 intersection, Vec3 ray_direction) {
 	Vec3 half_vector = (view + light).to_normalized();
 
 	double diffuse_cosine = std::max(0.0, normal * light);
-	Vec3 diffuse_component = mat.diffuse * LIGHT_INTENSITY * diffuse_cosine;
-
 	double specular_cosine = std::pow(std::max(0.0, normal * half_vector), mat.phong_exp);
-	Vec3 specular_component = mat.specular * LIGHT_INTENSITY * specular_cosine;
 
+	if (IS_SHADING_THRESHOLDED) {
+		diffuse_cosine = static_cast<double>(static_cast<int>(diffuse_cosine * THRESHOLDED_SHADING_DEGREES)) / THRESHOLDED_SHADING_DEGREES;
+		specular_cosine = static_cast<double>(static_cast<int>(specular_cosine * THRESHOLDED_SHADING_DEGREES)) / THRESHOLDED_SHADING_DEGREES;
+	}
+
+	Vec3 diffuse_component = mat.diffuse * LIGHT_INTENSITY * diffuse_cosine;
+	Vec3 specular_component = mat.specular * LIGHT_INTENSITY * specular_cosine;
 	Vec3 ambient_component = AMBIENT_COLOR * AMBIENT_LIGHT_INTENSITY;
 
 	return diffuse_component + specular_component + ambient_component;
@@ -142,9 +149,9 @@ int main()
 {
 	Image img = Image(NO_PIXELS, NO_PIXELS);
 	const std::array<Sphere, 3> objects = {
-		Sphere(Vec3(0, 4, -10), 4, RED),
-		Sphere(Vec3(0, 0, -20), 4, GREEN),
-		Sphere(Vec3(0, -4, -30), 4, BLUE),
+		Sphere(Vec3(0, 5, -20), 4, YELLOW),
+		Sphere(Vec3(0, 20, -40), 20, CYAN),
+		Sphere(Vec3(0, 20, -2000), 1500, MAGENTA),
 	};
 
 	for (int i = 0; i < NO_PIXELS; i++) {
