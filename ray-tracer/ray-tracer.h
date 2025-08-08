@@ -19,3 +19,7 @@ struct Ray {
 	Vec3 direction;
 };
 
+struct Pixel {
+	int x;
+	int y;
+};

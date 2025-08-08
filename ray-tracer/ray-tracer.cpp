@@ -4,36 +4,54 @@
 #include <math.h>
 #include <algorithm>
 #include <fstream>
+#include <string>
 #include <cstddef>
 #include <cstdint>
 #include "image.h"
 #include "sphere.h"
 #include "util/vec3.h"
 
+// Scene config
 const int LEFT = -1;
 const int RIGHT = 1;
 const int BOTTOM = -1;
 const int TOP = 1;
 const double FOCAL_LENGTH = 1;
 const Vec3 ORIGIN = Vec3(0, 0, 0);
-const int NO_PIXELS = 800; // Padding not implemented yet. Must be multiple of 4.
+const int WIDTH_PIXELS = 800;
+const int HEIGHT_PIXELS = 800;
 const ViewType VIEW_TYPE = PERSPECTIVE;
-const Vec3 LIGHT_DIRECTION = Vec3(-1, 1, 0);
+const Vec3 LIGHT_DIRECTION = Vec3(1, -1, 0);
 const double LIGHT_INTENSITY = 1;
 const Vec3 AMBIENT_COLOR = Vec3(0, 0.1, 0.3);
 const double AMBIENT_LIGHT_INTENSITY = 0.2;
 const Vec3 BACKGROUND_COLOR = Vec3(0, 0, 0);
+const int COLOR_CHANNELS = 256; // Maximum 256
+const std::string FILENAME = "my_file.bmp";
 
-const bool IS_SHADING_THRESHOLDED = true;
+// Effects
+const bool IS_SHADING_THRESHOLDED = false;
 const double THRESHOLDED_SHADING_DEGREES = 4.0;
+const bool IS_GRAYSCALE = false;
 
+// Scene
 const Material YELLOW = Material(Vec3(1, 1, 0), Vec3(1, 1, 1), 10);
 const Material CYAN = Material(Vec3(0, 1, 1), Vec3(1, 1, 1), 100);
 const Material MAGENTA = Material(Vec3(1, 0, 1), Vec3(1, 1, 1), 1000);
 
-static Ray compute_ray_for_pixel(int x, int y) {
-	const double u = LEFT + ((double)y / (double)NO_PIXELS) * (RIGHT - LEFT);
-	const double v = TOP + ((double)x / (double)NO_PIXELS) * (BOTTOM - TOP);
+const std::array<Sphere, 3> OBJECTS = {
+	Sphere(Vec3(0, -5, -20), 4, YELLOW),
+	Sphere(Vec3(0, -20, -40), 20, CYAN),
+	Sphere(Vec3(0, -20, -2000), 1500, MAGENTA),
+};
+
+static Ray compute_ray_for_pixel(Pixel p) {
+
+	const double CAMERA_LEFT = static_cast<double>(LEFT * WIDTH_PIXELS) / HEIGHT_PIXELS;
+	const double CAMERA_RIGHT = static_cast<double>(RIGHT * WIDTH_PIXELS) / HEIGHT_PIXELS;
+
+	const double u = CAMERA_LEFT + ((double)p.y / (double)WIDTH_PIXELS) * (CAMERA_RIGHT - CAMERA_LEFT);
+	const double v = TOP + ((double)p.x / (double)HEIGHT_PIXELS) * (BOTTOM - TOP);
 
 	if (VIEW_TYPE == PERSPECTIVE) {
 		Vec3 ray_direction = Vec3(u, v, -FOCAL_LENGTH);
@@ -57,8 +75,12 @@ static Vec3 shade(const Sphere s, Vec3 intersection, Vec3 ray_direction) {
 	double specular_cosine = std::pow(std::max(0.0, normal * half_vector), mat.phong_exp);
 
 	if (IS_SHADING_THRESHOLDED) {
-		diffuse_cosine = static_cast<double>(static_cast<int>(diffuse_cosine * THRESHOLDED_SHADING_DEGREES)) / THRESHOLDED_SHADING_DEGREES;
-		specular_cosine = static_cast<double>(static_cast<int>(specular_cosine * THRESHOLDED_SHADING_DEGREES)) / THRESHOLDED_SHADING_DEGREES;
+		diffuse_cosine = static_cast<double>(static_cast<int>(
+			diffuse_cosine * THRESHOLDED_SHADING_DEGREES))
+			/ THRESHOLDED_SHADING_DEGREES;
+		specular_cosine = static_cast<double>(static_cast<int>(
+			specular_cosine * THRESHOLDED_SHADING_DEGREES))
+			/ THRESHOLDED_SHADING_DEGREES;
 	}
 
 	Vec3 diffuse_component = mat.diffuse * LIGHT_INTENSITY * diffuse_cosine;
@@ -68,100 +90,18 @@ static Vec3 shade(const Sphere s, Vec3 intersection, Vec3 ray_direction) {
 	return diffuse_component + specular_component + ambient_component;
 }
 
-static void write_n_bytes(std::vector<std::byte>& vec, int n, int data) {
-	// Increasing offset due to little-endian ordering (LSB first)
-	int offset = 0;
-	for (int i = 0; i < n; i++) {
-		vec.push_back(std::byte((data >> offset) & 255));
-		offset += 8;
-	}
-}
-
-static std::byte doubleToByte(double value) {
-	if (std::isnan(value) || value < 0.0) value = 0.0;
-	if (value > 1.0) value = 1.0;
-	int intVal = static_cast<int>(value * 255.0 + 0.5);
-	intVal = std::clamp(intVal, 0, 255);
-	return static_cast<std::byte>(static_cast<uint8_t>(intVal));
-}
-
-void Image::generateBmp(std::string file_name) {
-	// Writing the header
-	std::vector<std::byte> image_bytes;
-
-	// File Header signature
-	image_bytes.push_back(std::byte('B'));
-	image_bytes.push_back(std::byte('M'));
-
-	const int file_size = 14 + 40 + 3 * width * height;
-	write_n_bytes(image_bytes, 4, file_size);
-
-	const int reserved_field = 0;
-	write_n_bytes(image_bytes, 4, reserved_field);
-
-	const int pixel_data_offset = 14 + 40;
-	write_n_bytes(image_bytes, 4, pixel_data_offset);
-
-	const int bitmap_header_size = 40;
-	write_n_bytes(image_bytes, 4, bitmap_header_size);
-
-	write_n_bytes(image_bytes, 4, width);
-	write_n_bytes(image_bytes, 4, height);
-
-	const int bmp_reserved_field = 1;
-	write_n_bytes(image_bytes, 2, bmp_reserved_field);
-
-	const int bits_per_pixel = 24;
-	write_n_bytes(image_bytes, 2, bits_per_pixel);
-
-	const int compression = 0;
-	write_n_bytes(image_bytes, 4, compression);
-
-	const int size_of_pixel_data = 3 * width * height;
-	write_n_bytes(image_bytes, 4, size_of_pixel_data);
-
-	const int horizontal_resolution = 2835;
-	write_n_bytes(image_bytes, 4, horizontal_resolution);
-
-	const int vertical_resolution = 2835;
-	write_n_bytes(image_bytes, 4, vertical_resolution);
-
-	const int color_palette_info = 0;
-	write_n_bytes(image_bytes, 4, color_palette_info);
-
-	const int no_important_colors = 0;
-	write_n_bytes(image_bytes, 4, no_important_colors);
-
-	for (int i = 0; i < width * height; i++) {
-		image_bytes.push_back(doubleToByte(data[i].z));
-		image_bytes.push_back(doubleToByte(data[i].y));
-		image_bytes.push_back(doubleToByte(data[i].x));
-	}
-
-	// std::ios::binary needed for binary data instead of text data on Windows
-	std::ofstream image_file(file_name, std::ios::binary);
-
-	image_file.write(reinterpret_cast<const char*>(image_bytes.data()), image_bytes.size());
-	image_file.close();
-}
-
 int main()
 {
-	Image img = Image(NO_PIXELS, NO_PIXELS);
-	const std::array<Sphere, 3> objects = {
-		Sphere(Vec3(0, 5, -20), 4, YELLOW),
-		Sphere(Vec3(0, 20, -40), 20, CYAN),
-		Sphere(Vec3(0, 20, -2000), 1500, MAGENTA),
-	};
+	Image img = Image(WIDTH_PIXELS, HEIGHT_PIXELS, COLOR_CHANNELS, IS_GRAYSCALE);
 
-	for (int i = 0; i < NO_PIXELS; i++) {
-		for (int j = 0; j < NO_PIXELS; j++) {
+	for (int i = 0; i < HEIGHT_PIXELS; i++) {
+		for (int j = 0; j < WIDTH_PIXELS; j++) {
 
 			double min_depth = DBL_MAX;
 			Vec3 top_color = BACKGROUND_COLOR;
-			const Ray current_ray = compute_ray_for_pixel(i, j);
+			const Ray current_ray = compute_ray_for_pixel(Pixel(i, j));
 
-			for (const Sphere s : objects) {
+			for (const Sphere s : OBJECTS) {
 				const double t = s.ray_intersection(current_ray);
 				const Vec3 intersection = current_ray.origin + current_ray.direction * t;
 				if (t < min_depth && t > 0) {
@@ -173,6 +113,6 @@ int main()
 			img.draw(i, j, top_color);
 		}
 	}
-	img.generateBmp("my_file.bmp");
+	img.generateBmp(FILENAME);
 	return 0;
 }
