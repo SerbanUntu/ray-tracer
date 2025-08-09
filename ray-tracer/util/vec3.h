@@ -26,6 +26,11 @@ public:
 	inline Vec3 operator+(Vec3 const& other) const {
 		return Vec3(x + other.x, y + other.y, z + other.z);
 	}
+	inline void operator+=(Vec3 const& other) {
+		x += other.x;
+		y += other.y;
+		z += other.z;
+	}
 	inline Vec3 operator-(Vec3 const& other) const {
 		return Vec3(x - other.x, y - other.y, z - other.z);
 	}
@@ -37,5 +42,8 @@ public:
 	}
 	inline Vec3 operator*(double d) const {
 		return Vec3(x * d, y * d, z * d);
+	}
+	inline Vec3 operator/(double d) const {
+		return Vec3(x / d, y / d, z / d);
 	}
 };

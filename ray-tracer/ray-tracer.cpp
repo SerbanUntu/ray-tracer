@@ -7,9 +7,15 @@
 #include <string>
 #include <cstddef>
 #include <cstdint>
+#include <random>
 #include "image.h"
 #include "sphere.h"
 #include "util/vec3.h"
+
+// Random utils
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_real_distribution<> dist(-.5, .5);
 
 // Scene config
 const int LEFT = -1;
@@ -28,6 +34,7 @@ const double AMBIENT_LIGHT_INTENSITY = 0.2;
 const Vec3 BACKGROUND_COLOR = Vec3(0, 0, 0);
 const int COLOR_CHANNELS = 256; // Maximum 256
 const std::string FILENAME = "my_file.bmp";
+const int RAYS_PER_PIXEL = 100;
 
 // Effects
 const bool IS_SHADING_THRESHOLDED = false;
@@ -50,8 +57,12 @@ static Ray compute_ray_for_pixel(Pixel p) {
 	const double CAMERA_LEFT = static_cast<double>(LEFT * WIDTH_PIXELS) / HEIGHT_PIXELS;
 	const double CAMERA_RIGHT = static_cast<double>(RIGHT * WIDTH_PIXELS) / HEIGHT_PIXELS;
 
-	const double u = CAMERA_LEFT + ((double)p.y / (double)WIDTH_PIXELS) * (CAMERA_RIGHT - CAMERA_LEFT);
-	const double v = TOP + ((double)p.x / (double)HEIGHT_PIXELS) * (BOTTOM - TOP);
+	// Random sampling is disabled when there is a single ray per pixel
+	const double RANDOM_X = (double)p.x + ((RAYS_PER_PIXEL > 1) ? dist(gen) : 0);
+	const double RANDOM_Y = (double)p.y + ((RAYS_PER_PIXEL > 1) ? dist(gen) : 0);
+
+	const double u = CAMERA_LEFT + (RANDOM_Y / (double)WIDTH_PIXELS) * (CAMERA_RIGHT - CAMERA_LEFT);
+	const double v = TOP + (RANDOM_X / (double)HEIGHT_PIXELS) * (BOTTOM - TOP);
 
 	if (VIEW_TYPE == PERSPECTIVE) {
 		Vec3 ray_direction = Vec3(u, v, -FOCAL_LENGTH);
@@ -97,20 +108,27 @@ int main()
 	for (int i = 0; i < HEIGHT_PIXELS; i++) {
 		for (int j = 0; j < WIDTH_PIXELS; j++) {
 
-			double min_depth = DBL_MAX;
-			Vec3 top_color = BACKGROUND_COLOR;
-			const Ray current_ray = compute_ray_for_pixel(Pixel(i, j));
+			Vec3 pixel_color = Vec3(0, 0, 0);
 
-			for (const Sphere s : OBJECTS) {
-				const double t = s.ray_intersection(current_ray);
-				const Vec3 intersection = current_ray.origin + current_ray.direction * t;
-				if (t < min_depth && t > 0) {
-					min_depth = t;
-					top_color = shade(s, intersection, current_ray.direction);
+			for (int k = 0; k < RAYS_PER_PIXEL; k++) {
+				double min_depth = DBL_MAX;
+				Vec3 top_color = BACKGROUND_COLOR;
+				const Ray current_ray = compute_ray_for_pixel(Pixel(i, j));
+
+				for (const Sphere s : OBJECTS) {
+					const double t = s.ray_intersection(current_ray);
+					const Vec3 intersection = current_ray.origin + current_ray.direction * t;
+					if (t < min_depth && t > 0) {
+						min_depth = t;
+						top_color = shade(s, intersection, current_ray.direction);
+					}
 				}
+
+				pixel_color += top_color / RAYS_PER_PIXEL;
+
 			}
 
-			img.draw(i, j, top_color);
+			img.draw(i, j, pixel_color);
 		}
 	}
 	img.generateBmp(FILENAME);
