@@ -10,7 +10,7 @@ private:
 	double radius;
 
 public:
-	Sphere(Vec3 _center, double _radius, Material _mat) : center(_center), radius(_radius), Object(_mat) {}
+	Sphere(Vec3 _center, double _radius, const Material* _mat) : center(_center), radius(_radius), Object(_mat) {}
 	Vec3 get_center() const { return center; }
 	double get_radius() const { return radius; }
 	double ray_intersection(Ray r) const override {
