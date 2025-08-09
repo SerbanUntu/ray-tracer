@@ -25,7 +25,7 @@ const int RIGHT = 1;
 const int BOTTOM = -1;
 const int TOP = 1;
 const double FOCAL_LENGTH = 1;
-const Vec3 ORIGIN = Vec3(0, 0, 0);
+const Vec3 ORIGIN = Vec3::ZERO;
 const int WIDTH_PIXELS = 800;
 const int HEIGHT_PIXELS = 800;
 const ViewType VIEW_TYPE = PERSPECTIVE;
@@ -36,7 +36,8 @@ const double AMBIENT_LIGHT_INTENSITY = 0.2;
 const Vec3 BACKGROUND_COLOR = Vec3(0.39, 0.582, 0.9258);
 const int COLOR_CHANNELS = 256; // Maximum 256
 const std::string FILENAME = "my_file.bmp";
-const int RAYS_PER_PIXEL = 1;
+const int RAYS_PER_PIXEL = 4;
+const int MAX_DEPTH = 50;
 
 // Effects
 const bool IS_SHADING_THRESHOLDED = false;
@@ -48,10 +49,17 @@ const Material YELLOW = Material(Vec3(1, 1, 0), Vec3(1, 1, 1), 10);
 const Material CYAN = Material(Vec3(0, 1, 1), Vec3(1, 1, 1), 100);
 const Material FLOOR = Material(Vec3(0.5, 0.5, 0.5), Vec3(1, 1, 1), 1000);
 
-const std::array<std::unique_ptr<Object>, 2> OBJECTS = {
-	std::make_unique<Sphere>(Vec3(0, -5, -20), 6, YELLOW),
+const std::array<std::unique_ptr<Object>, 3> OBJECTS = {
+	std::make_unique<Sphere>(Vec3(6, -5, -20), 6, YELLOW),
+	std::make_unique<Sphere>(Vec3(-6, -5, -20), 6, CYAN),
 	std::make_unique<Floor>(-11, FLOOR),
 };
+
+static Vec3 shade(const Object& o, Vec3 intersection, Vec3 ray_direction, int depth);
+
+static Vec3 random_unit() {
+	return Vec3(dist(gen) * 2, dist(gen) * 2, dist(gen) * 2).to_normalized();
+}
 
 static Ray compute_ray_for_pixel(Pixel p) {
 
@@ -75,31 +83,33 @@ static Ray compute_ray_for_pixel(Pixel p) {
 	}
 }
 
-static Vec3 shade(const Object& o, Vec3 intersection, Vec3 ray_direction) {
-	Material mat = o.get_material();
+static Vec3 trace(Ray r, int depth) {
+	double min_depth = DBL_MAX;
+	Vec3 top_color = (depth == 0) ? BACKGROUND_COLOR : Vec3(1, 1, 1);
+	if (depth > MAX_DEPTH) return Vec3::ZERO;
 
-	Vec3 normal = o.get_normal(intersection);
-	Vec3 light = -LIGHT_DIRECTION.to_normalized();
-	Vec3 view = -ray_direction;
-	Vec3 half_vector = (view + light).to_normalized();
-
-	double diffuse_cosine = std::max(0.0, normal * light);
-	double specular_cosine = std::pow(std::max(0.0, normal * half_vector), mat.phong_exp);
-
-	if (IS_SHADING_THRESHOLDED) {
-		diffuse_cosine = static_cast<double>(static_cast<int>(
-			diffuse_cosine * THRESHOLDED_SHADING_DEGREES))
-			/ THRESHOLDED_SHADING_DEGREES;
-		specular_cosine = static_cast<double>(static_cast<int>(
-			specular_cosine * THRESHOLDED_SHADING_DEGREES))
-			/ THRESHOLDED_SHADING_DEGREES;
+	for (const auto& oPtr : OBJECTS) {
+		const Object& o = *oPtr;
+		const double t = o.ray_intersection(r);
+		const Vec3 intersection = r.origin + r.direction * t;
+		if (t < min_depth && t > 0.001 && intersection.z < -1) {
+			min_depth = t;
+			top_color = shade(o, intersection, r.direction, depth);
+		}
 	}
 
-	Vec3 diffuse_component = mat.diffuse * LIGHT_INTENSITY * diffuse_cosine;
-	Vec3 specular_component = mat.specular * LIGHT_INTENSITY * specular_cosine;
-	Vec3 ambient_component = AMBIENT_COLOR * AMBIENT_LIGHT_INTENSITY;
+	return top_color;
+}
 
-	return diffuse_component + specular_component + ambient_component;
+static Vec3 shade(const Object& o, Vec3 intersection, Vec3 ray_direction, int depth) {
+	if (depth > MAX_DEPTH) return Vec3::ZERO;
+
+	Material mat = o.get_material();
+	Vec3 d = mat.diffuse;
+
+	Vec3 normal = o.get_normal(intersection);
+	Vec3 rec = trace(Ray(intersection, (normal + random_unit()).to_normalized()), depth + 1);
+	return Vec3(rec.x * d.x, rec.y * d.y, rec.z * d.z);
 }
 
 int main()
@@ -109,28 +119,15 @@ int main()
 	for (int i = 0; i < HEIGHT_PIXELS; i++) {
 		for (int j = 0; j < WIDTH_PIXELS; j++) {
 
-			Vec3 pixel_color = Vec3(0, 0, 0);
+			Vec3 pixel_color = Vec3::ZERO;
 
 			for (int k = 0; k < RAYS_PER_PIXEL; k++) {
-				double min_depth = DBL_MAX;
-				Vec3 top_color = BACKGROUND_COLOR;
 				const Ray current_ray = compute_ray_for_pixel(Pixel(i, j));
-
-				for (const auto& oPtr : OBJECTS) {
-					const Object& o = *oPtr;
-					const double t = o.ray_intersection(current_ray);
-					const Vec3 intersection = current_ray.origin + current_ray.direction * t;
-					if (t < min_depth && intersection.z < -1) {
-						min_depth = t;
-						top_color = shade(o, intersection, current_ray.direction);
-					}
-				}
-
-				pixel_color += top_color / RAYS_PER_PIXEL;
+				pixel_color += trace(current_ray, 0);
 
 			}
 
-			img.draw(i, j, pixel_color);
+			img.draw(i, j, pixel_color / RAYS_PER_PIXEL);
 		}
 	}
 	img.generateBmp(FILENAME);

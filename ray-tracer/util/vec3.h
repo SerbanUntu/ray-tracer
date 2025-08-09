@@ -45,4 +45,7 @@ public:
 	Vec3 operator/(double d) const {
 		return Vec3(x / d, y / d, z / d);
 	}
+	static const Vec3 ZERO;
 };
+
+inline const Vec3 Vec3::ZERO = Vec3(0, 0, 0);
