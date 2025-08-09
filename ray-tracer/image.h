@@ -18,7 +18,7 @@ public:
 			data.push_back(Vec3(0, 0, 0));
 		}
 	}
-	inline void draw(int x, int y, Vec3 color) {
+	void draw(int x, int y, Vec3 color) {
 		if (x >= height) throw std::invalid_argument("Height exceeded");
 		if (y >= width) throw std::invalid_argument("Width exceeded");
 		data[x * width + y] = color;

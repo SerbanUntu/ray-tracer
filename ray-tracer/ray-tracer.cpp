@@ -8,7 +8,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <random>
+#include <memory>
 #include "image.h"
+#include "floor.h"
 #include "sphere.h"
 #include "util/vec3.h"
 
@@ -31,10 +33,10 @@ const Vec3 LIGHT_DIRECTION = Vec3(1, -1, 0);
 const double LIGHT_INTENSITY = 1;
 const Vec3 AMBIENT_COLOR = Vec3(0, 0.1, 0.3);
 const double AMBIENT_LIGHT_INTENSITY = 0.2;
-const Vec3 BACKGROUND_COLOR = Vec3(0, 0, 0);
+const Vec3 BACKGROUND_COLOR = Vec3(0.39, 0.582, 0.9258);
 const int COLOR_CHANNELS = 256; // Maximum 256
 const std::string FILENAME = "my_file.bmp";
-const int RAYS_PER_PIXEL = 100;
+const int RAYS_PER_PIXEL = 1;
 
 // Effects
 const bool IS_SHADING_THRESHOLDED = false;
@@ -44,12 +46,11 @@ const bool IS_GRAYSCALE = false;
 // Scene
 const Material YELLOW = Material(Vec3(1, 1, 0), Vec3(1, 1, 1), 10);
 const Material CYAN = Material(Vec3(0, 1, 1), Vec3(1, 1, 1), 100);
-const Material MAGENTA = Material(Vec3(1, 0, 1), Vec3(1, 1, 1), 1000);
+const Material FLOOR = Material(Vec3(0.5, 0.5, 0.5), Vec3(1, 1, 1), 1000);
 
-const std::array<Sphere, 3> OBJECTS = {
-	Sphere(Vec3(0, -5, -20), 4, YELLOW),
-	Sphere(Vec3(0, -20, -40), 20, CYAN),
-	Sphere(Vec3(0, -20, -2000), 1500, MAGENTA),
+const std::array<std::unique_ptr<Object>, 2> OBJECTS = {
+	std::make_unique<Sphere>(Vec3(0, -5, -20), 6, YELLOW),
+	std::make_unique<Floor>(-11, FLOOR),
 };
 
 static Ray compute_ray_for_pixel(Pixel p) {
@@ -74,10 +75,10 @@ static Ray compute_ray_for_pixel(Pixel p) {
 	}
 }
 
-static Vec3 shade(const Sphere s, Vec3 intersection, Vec3 ray_direction) {
-	Material mat = s.get_material();
+static Vec3 shade(const Object& o, Vec3 intersection, Vec3 ray_direction) {
+	Material mat = o.get_material();
 
-	Vec3 normal = (intersection - s.get_center()).to_normalized();
+	Vec3 normal = o.get_normal(intersection);
 	Vec3 light = -LIGHT_DIRECTION.to_normalized();
 	Vec3 view = -ray_direction;
 	Vec3 half_vector = (view + light).to_normalized();
@@ -115,12 +116,13 @@ int main()
 				Vec3 top_color = BACKGROUND_COLOR;
 				const Ray current_ray = compute_ray_for_pixel(Pixel(i, j));
 
-				for (const Sphere s : OBJECTS) {
-					const double t = s.ray_intersection(current_ray);
+				for (const auto& oPtr : OBJECTS) {
+					const Object& o = *oPtr;
+					const double t = o.ray_intersection(current_ray);
 					const Vec3 intersection = current_ray.origin + current_ray.direction * t;
-					if (t < min_depth && t > 0) {
+					if (t < min_depth && intersection.z < -1) {
 						min_depth = t;
-						top_color = shade(s, intersection, current_ray.direction);
+						top_color = shade(o, intersection, current_ray.direction);
 					}
 				}
 
