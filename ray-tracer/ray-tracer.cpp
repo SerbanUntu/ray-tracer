@@ -16,6 +16,7 @@
 #include "util/random_utils.h"
 #include "materials/lambertian.h"
 #include "materials/metal.h"
+#include "materials/dielectric.h"
 
 static std::uniform_real_distribution<> offset_dist(-.5, .5);
 
@@ -30,6 +31,7 @@ const int WIDTH_PIXELS = 800;
 const int HEIGHT_PIXELS = 800;
 const ViewType VIEW_TYPE = PERSPECTIVE;
 const Vec3 BACKGROUND_COLOR = Vec3(0.39, 0.582, 0.9258);
+const Vec3 SKY_COLOR = Vec3(1, 1, 1);
 const int COLOR_CHANNELS = 256; // Maximum 256
 const std::string FILENAME = "my_file.bmp";
 const int RAYS_PER_PIXEL = 4;
@@ -43,11 +45,13 @@ const bool IS_GRAYSCALE = false;
 // Scene
 const auto YELLOW = Lambertian(Vec3(1, 1, 0));
 const auto STEEL = Metal(Vec3(0.4, 0.5, 0.6), 0.1);
+const auto SOLID_GLASS = Dielectric(1.5);
+const auto AIR_BUBBLE = Dielectric(1. / 1.33);
 const auto FLOOR = Metal(Vec3(0.4, 0.4, 0.8), 0.6);
 
 const std::array<std::unique_ptr<Object>, 3> OBJECTS = {
 	std::make_unique<Sphere>(Vec3(6, -5, -20), 6, &YELLOW),
-	std::make_unique<Sphere>(Vec3(-6, -5, -20), 6, &STEEL),
+	std::make_unique<Sphere>(Vec3(-6, -5, -20), 6, &SOLID_GLASS),
 	std::make_unique<Floor>(-11, &FLOOR),
 };
 
@@ -77,7 +81,7 @@ static Ray compute_ray_for_pixel(Pixel p) {
 
 static Vec3 trace(Ray r, int depth) {
 	double min_depth = DBL_MAX;
-	Vec3 top_color = (depth == 0) ? BACKGROUND_COLOR : Vec3(1, 1, 1);
+	Vec3 top_color = (depth == 0) ? BACKGROUND_COLOR : SKY_COLOR;
 	if (depth > MAX_DEPTH) return Vec3::ZERO;
 
 	for (const auto& oPtr : OBJECTS) {
