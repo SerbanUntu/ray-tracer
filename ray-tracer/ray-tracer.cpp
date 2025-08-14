@@ -60,7 +60,15 @@ const Cubemap cm = Cubemap(
 	Image(Vec3(1, 0, 1))
 );
 
-const auto TEXTURED = LambertianTexture(cm);
+const Cubemap cm2 = Cubemap(
+	std::string("texture.bmp"),
+	50,
+	50,
+	256,
+	false
+);
+
+const auto TEXTURED = LambertianTexture(cm2);
 
 const std::array<std::unique_ptr<Object>, 3> OBJECTS = {
 	std::make_unique<Sphere>(Vec3(6, -5, -20), 6, &YELLOW),
