@@ -13,26 +13,25 @@ public:
 
 		double eta_in = AIR_REFRACTIVE_INDEX;
 		double eta_out = refractive_index;
+		double ratio = eta_in / eta_out;
 
 		// Ray comes from outside the object
 		if (cosine > 0) {
-			double aux = eta_in;
-			eta_in = eta_out;
-			eta_out = aux;
+			ratio = 1. / ratio;
 		}
 
 		Vec3 uv = ray_in.direction.to_normalized();
 		Vec3 n = normal.to_normalized();
 
-		static double cos = std::min(-uv * n, 1.);
-		static double sine = std::sqrt(1. - std::pow(cos, 2));
+		double cos = std::min(-uv * n, 1.);
+		double sin = std::sqrt(1. - std::pow(cos, 2));
 
 		// Cannot refract
-		if (sine * eta_in / eta_out > 1.0) {
+		if (sin * ratio > 1.0) {
 			return Ray(intersection, reflect(ray_in.direction, normal));
 		}
 
-		return Ray(intersection, refract(ray_in.direction, normal, eta_in, eta_out));
+		return Ray(intersection, refract(ray_in.direction, normal, ratio));
 	}
 	Vec3 get_color(Ray ray_in, Vec3 intersection, Vec3 normal) const override {
 		return Vec3(1, 1, 1);
