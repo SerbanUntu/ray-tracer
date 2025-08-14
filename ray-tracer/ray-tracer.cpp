@@ -15,8 +15,10 @@
 #include "util/vec3.h"
 #include "util/random_utils.h"
 #include "materials/lambertian.h"
+#include "materials/lambertian_texture.h"
 #include "materials/metal.h"
 #include "materials/dielectric.h"
+#include "cubemap.h"
 
 static std::uniform_real_distribution<> offset_dist(-.5, .5);
 
@@ -49,9 +51,20 @@ const auto SOLID_GLASS = Dielectric(1.5);
 const auto AIR_BUBBLE = Dielectric(1. / 1.33);
 const auto FLOOR = Metal(Vec3(0.4, 0.4, 0.8), 0.6);
 
+const Cubemap cm = Cubemap(
+	Image(Vec3(1, 0, 0)),
+	Image(Vec3(0, 1, 0)),
+	Image(Vec3(0, 0, 1)),
+	Image(Vec3(1, 1, 0)),
+	Image(Vec3(0, 1, 1)),
+	Image(Vec3(1, 0, 1))
+);
+
+const auto TEXTURED = LambertianTexture(cm);
+
 const std::array<std::unique_ptr<Object>, 3> OBJECTS = {
 	std::make_unique<Sphere>(Vec3(6, -5, -20), 6, &YELLOW),
-	std::make_unique<Sphere>(Vec3(-6, -5, -20), 6, &SOLID_GLASS),
+	std::make_unique<Sphere>(Vec3(-6, -5, -20), 6, &TEXTURED),
 	std::make_unique<Floor>(-11, &FLOOR),
 };
 

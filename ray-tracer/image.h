@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include "util/vec3.h"
 
-
 class Image {
 private:
 	std::vector<Vec3> data;
@@ -24,6 +23,10 @@ public:
 			data.push_back(Vec3::ZERO);
 		}
 	}
+	Image(Vec3 color) :
+		width(1), height(1), color_channels(256), is_grayscale(false) {
+		data.push_back(color);
+	}
 	void draw(int x, int y, Vec3 color) {
 		validate_dimensions(x, y);
 		data[x * width + y] = color;
@@ -31,6 +34,11 @@ public:
 	void add_color(int x, int y, Vec3 color) {
 		validate_dimensions(x, y);
 		data[x * width + y] += color;
+	}
+	int get_width() const { return width; }
+	int get_height() const { return height; }
+	Vec3 get_color(int x, int y) const {
+		return data[x * width + y];
 	}
 	void generateBmp(std::string file_name);
 };
