@@ -12,4 +12,5 @@ endif()
 project ("ray-tracer")
 
 # Include sub-projects.
-add_subdirectory ("ray-tracer")
+add_subdirectory ("src")
+add_subdirectory ("test")

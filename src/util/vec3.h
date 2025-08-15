@@ -22,6 +22,13 @@ public:
 		return sqrt(x * x + y * y + z * z);
 	}
 
+	Vec3 cross(Vec3 const& other) const {
+		return Vec3(
+			y * other.z - z * other.y,
+			z * other.x - x * other.z,
+			x * other.y - y * other.x
+		);
+	}
 	Vec3 operator+(Vec3 const& other) const {
 		return Vec3(x + other.x, y + other.y, z + other.z);
 	}
