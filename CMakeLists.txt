@@ -11,6 +11,8 @@ endif()
 
 project ("ray-tracer")
 
+enable_testing()
+
 # Include sub-projects.
 add_subdirectory ("src")
 add_subdirectory ("test")
