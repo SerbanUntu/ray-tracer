@@ -14,7 +14,4 @@ add_custom_command(
             $<TARGET_FILE_DIR:ray-tracer>
 )
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET ray-tracer PROPERTY CXX_STANDARD 20)
-endif()
-
+set_property(TARGET ray-tracer PROPERTY CXX_STANDARD 23)

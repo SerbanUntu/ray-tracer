@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.20)
+
 include(FetchContent)
 
 # Declare googletest
@@ -23,3 +25,5 @@ target_link_libraries(tests PRIVATE raytracer_lib)
 # Enable CTest and test discovery
 include(GoogleTest)
 gtest_discover_tests(tests)
+
+set_property(TARGET tests PROPERTY CXX_STANDARD 23)

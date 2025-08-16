@@ -8,6 +8,4 @@ target_include_directories(raytracer_lib
         ${CMAKE_CURRENT_SOURCE_DIR}   # so "util/vec3.h" resolves
 )
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET raytracer_lib PROPERTY CXX_STANDARD 20)
-endif()
+set_property(TARGET raytracer_lib PROPERTY CXX_STANDARD 23)
