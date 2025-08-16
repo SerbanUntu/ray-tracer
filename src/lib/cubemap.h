@@ -148,8 +148,8 @@ public:
 		if (ny >= nz && ny >= nx && direction.y >= 0) {
 			double normalized_x = (direction.x + 1) / 2 * top.get_width();
 			double normalized_z = (direction.z + 1) / 2 * top.get_height();
-			int x = std::floor(normalized_x);
-			int z = std::floor(normalized_z);
+			int x = static_cast<int>(std::floor(normalized_x));
+			int z = static_cast<int>(std::floor(normalized_z));
 			return top.get_color(x, z);
 		}
 
@@ -157,8 +157,8 @@ public:
 		else if (ny >= nz && ny >= nx && direction.y < 0) {
 			double normalized_x = (direction.x + 1) / 2 * bottom.get_width();
 			double normalized_z = (direction.z + 1) / 2 * bottom.get_height();
-			int x = std::floor(normalized_x);
-			int z = std::floor(normalized_z);
+			int x = static_cast<int>(std::floor(normalized_x));
+			int z = static_cast<int>(std::floor(normalized_z));
 			return bottom.get_color(x, z);
 		}
 
@@ -166,8 +166,8 @@ public:
 		else if (nx >= ny && nx >= nz && direction.x < 0) {
 			double normalized_y = (direction.y + 1) / 2 * left.get_width();
 			double normalized_z = (direction.z + 1) / 2 * left.get_height();
-			int y = std::floor(normalized_y);
-			int z = std::floor(normalized_z);
+			int y = static_cast<int>(std::floor(normalized_y));
+			int z = static_cast<int>(std::floor(normalized_z));
 			return left.get_color(y, z);
 		}
 
@@ -175,8 +175,8 @@ public:
 		else if (nx >= ny && nx >= nz && direction.x >= 0) {
 			double normalized_y = (direction.y + 1) / 2 * right.get_width();
 			double normalized_z = (direction.z + 1) / 2 * right.get_height();
-			int y = std::floor(normalized_y);
-			int z = std::floor(normalized_z);
+			int y = static_cast<int>(std::floor(normalized_y));
+			int z = static_cast<int>(std::floor(normalized_z));
 			return right.get_color(y, z);
 		}
 
@@ -184,8 +184,8 @@ public:
 		else if (nz >= nx && nz >= ny && direction.z >= 0) {
 			double normalized_x = (direction.x + 1) / 2 * front.get_width();
 			double normalized_y = (direction.y + 1) / 2 * front.get_height();
-			int x = std::floor(normalized_x);
-			int y = std::floor(normalized_y);
+			int x = static_cast<int>(std::floor(normalized_x));
+			int y = static_cast<int>(std::floor(normalized_y));
 			return front.get_color(x, y);
 		}
 
@@ -193,8 +193,8 @@ public:
 		else {
 			double normalized_x = (direction.x + 1) / 2 * back.get_width();
 			double normalized_y = (direction.y + 1) / 2 * back.get_height();
-			int x = std::floor(normalized_x);
-			int y = std::floor(normalized_y);
+			int x = static_cast<int>(std::floor(normalized_x));
+			int y = static_cast<int>(std::floor(normalized_y));
 			return back.get_color(x, y);
 		}
 	}

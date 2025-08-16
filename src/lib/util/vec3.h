@@ -62,4 +62,4 @@ public:
 	static const Vec3 ZERO;
 };
 
-const Vec3 Vec3::ZERO = Vec3(0, 0, 0);
+inline const Vec3 Vec3::ZERO = Vec3(0, 0, 0);
