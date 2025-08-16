@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <iostream>
 #include "util/vec3.h"
@@ -17,3 +17,4 @@ struct Pixel {
 	int x;
 	int y;
 };
+

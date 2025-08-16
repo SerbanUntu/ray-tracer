@@ -1,6 +1,6 @@
 #pragma once
 #include "../util/vec3.h"
-#include "../ray-tracer.h"
+#include "../camera.h"
 
 class Material {
 public:

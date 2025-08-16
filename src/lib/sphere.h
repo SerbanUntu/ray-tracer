@@ -1,7 +1,7 @@
 #pragma once
 #include <math.h>
 #include "util/vec3.h"
-#include "ray-tracer.h"
+#include "camera.h"
 #include "object.h"
 
 class Sphere : public Object {

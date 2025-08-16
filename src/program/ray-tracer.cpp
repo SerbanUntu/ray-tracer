@@ -1,4 +1,4 @@
-﻿#include "ray-tracer.h"
+﻿#include <iostream>
 #include <vector>
 #include <array>
 #include <math.h>
@@ -19,6 +19,7 @@
 #include "materials/metal.h"
 #include "materials/dielectric.h"
 #include "cubemap.h"
+#include "camera.h"
 
 static std::uniform_real_distribution<> offset_dist(-.5, .5);
 

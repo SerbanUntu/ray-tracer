@@ -3,6 +3,7 @@
 #include <math.h>
 #include <iostream>
 #include <fstream>
+#include <cstddef>
 
 static std::byte doubleToColorByte(double value, int channels) {
 	if (std::isnan(value) || value < 0.0) value = 0.0;

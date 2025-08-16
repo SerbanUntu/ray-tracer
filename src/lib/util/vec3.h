@@ -1,5 +1,6 @@
 #pragma once
 #include<math.h>
+#include<iostream>
 
 class Vec3 {
 public:
@@ -29,6 +30,9 @@ public:
 			x * other.y - y * other.x
 		);
 	}
+	bool operator==(Vec3 const& other) const {
+		return x == other.x && y == other.y && z == other.z;
+	}
 	Vec3 operator+(Vec3 const& other) const {
 		return Vec3(x + other.x, y + other.y, z + other.z);
 	}
@@ -52,7 +56,10 @@ public:
 	Vec3 operator/(double d) const {
 		return Vec3(x / d, y / d, z / d);
 	}
+	friend std::ostream& operator<<(std::ostream& os, Vec3 const& v) {
+		return os << "Vec3(" << v.x << ", " << v.y << ", " << v.z << ")";
+	}
 	static const Vec3 ZERO;
 };
 
-inline const Vec3 Vec3::ZERO = Vec3(0, 0, 0);
+const Vec3 Vec3::ZERO = Vec3(0, 0, 0);
