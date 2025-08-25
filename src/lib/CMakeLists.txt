@@ -1,7 +1,7 @@
 add_library(raytracer_lib
     image.cpp
     util/random_utils.cpp
- "camera.h")
+ "camera.h" "util/complex.h")
 
 target_include_directories(raytracer_lib
     PUBLIC

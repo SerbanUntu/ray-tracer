@@ -4,8 +4,10 @@
 
 # Add source to this project's executable.
 add_executable (ray-tracer "ray-tracer.cpp")
+add_executable (mandelbrot "mandelbrot.cpp")
 
 target_link_libraries(ray-tracer PRIVATE raytracer_lib)
+target_link_libraries(mandelbrot PRIVATE raytracer_lib)
 
 add_custom_command(
     TARGET ray-tracer POST_BUILD
@@ -15,3 +17,4 @@ add_custom_command(
 )
 
 set_property(TARGET ray-tracer PROPERTY CXX_STANDARD 23)
+set_property(TARGET mandelbrot PROPERTY CXX_STANDARD 23)
