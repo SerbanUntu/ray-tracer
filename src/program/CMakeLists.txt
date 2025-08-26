@@ -6,8 +6,8 @@
 add_executable (ray-tracer "ray-tracer.cpp")
 add_executable (mandelbrot "mandelbrot.cpp")
 
-target_link_libraries(ray-tracer PRIVATE raytracer_lib)
-target_link_libraries(mandelbrot PRIVATE raytracer_lib)
+target_link_libraries(ray-tracer PRIVATE render_lib)
+target_link_libraries(mandelbrot PRIVATE render_lib)
 
 add_custom_command(
     TARGET ray-tracer POST_BUILD

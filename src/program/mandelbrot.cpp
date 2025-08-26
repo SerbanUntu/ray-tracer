@@ -1,61 +1,58 @@
 #include <string>
-#include <image.h>
-#include <util/complex.h>
+#include "image.h"
+#include "util/complex.h"
 
 struct Point {
 	double x;
 	double y;
 };
 
-constexpr int WIDTH = 1000;
+constexpr int WIDTH = 4000;
 constexpr double ASPECT_RATIO = 16. / 9.;
-constexpr double ZOOM = 0.8;
-constexpr int MAX_ITERATIONS = 100;
-constexpr Point CENTER = Point(-0.5, 0);
+constexpr double ZOOM = 100;
+constexpr int MAX_ITERATIONS = 1000;
+constexpr Point CENTER = Point(0.16125, 0.638438);
+constexpr auto ESCAPE_BOUNDARY_SQUARED = 1 << 8; // Higher = better smoothing
 const std::string FILENAME = "mandelbrot.bmp";
 
+const double LOG_2 = std::log(2);
 constexpr int HEIGHT = WIDTH / ASPECT_RATIO;
 constexpr double LEFT = -(double)ASPECT_RATIO / ZOOM + CENTER.x;
 const double RIGHT = (double)ASPECT_RATIO / ZOOM + CENTER.x;
 const double BOTTOM = -1. / ZOOM + CENTER.y;
 const double TOP = 1 / ZOOM + CENTER.y;
 
-constexpr auto PALLETE_SIZE = 4;
+constexpr auto PALLETE_SIZE = 16;
 const Vec3 PALLETE[PALLETE_SIZE] = {
-	Vec3::ZERO,      // Black
-	Vec3(0, 0, 1),   // Blue
-	Vec3(1, 1, 0),   // Yellow
-	Vec3::ZERO,      // Black
+	Vec3(0.094118, 0.321569, 0.694118), Vec3(0.223529, 0.490196, 0.819608), Vec3(0.525490, 0.709804, 0.898039), Vec3(0.827451, 0.925490, 0.972549),
+	Vec3(0.945098, 0.913725, 0.749020), Vec3(0.972549, 0.788235, 0.372549), Vec3(1.000000, 0.666667, 0.000000), Vec3(0.800000, 0.501961, 0.000000),
+	Vec3(0.600000, 0.341176, 0.000000), Vec3(0.415686, 0.203922, 0.011765), Vec3(0.258824, 0.117647, 0.058824), Vec3(0.098039, 0.027451, 0.101961),
+	Vec3(0.035294, 0.003922, 0.184314), Vec3(0.015686, 0.015686, 0.286275), Vec3(0.000000, 0.027451, 0.392157), Vec3(0.047059, 0.172549, 0.541176)
 };
 
-int calculate_iterations(Complex c) {
-	int i = 0;
+double calculate_iterations(Complex c) {
+	double i = 0;
 	Complex z = Complex::ZERO;
-	while (z.magnitude_squared() < 4 && i < MAX_ITERATIONS) {
+	while (z.magnitude_squared() < ESCAPE_BOUNDARY_SQUARED && i < MAX_ITERATIONS) {
 		z = z.squared() + c;
 		i++;
 	}
-	return i;
+
+	if (i >= MAX_ITERATIONS) return i;
+
+	// Smoothing
+	double log_zn = std::log(z.magnitude_squared()) / 2.;
+	double nu = std::log(log_zn / LOG_2) / LOG_2;
+	return i + 1 - nu;
 }
 
-Vec3 get_mandelbrot_color(int iterations) {
+Vec3 get_mandelbrot_color(double iterations) {
+	if (iterations >= MAX_ITERATIONS) return Vec3::ZERO;
 
-	// Each number of iterations is between two well-defined bands of color;
-	// The lower band and the upper band
-
-	// The index of the lower color band for the given number of iterations
-	const int intensity = static_cast<int>(
-		std::floor((double)iterations * ((double)PALLETE_SIZE - 1) / MAX_ITERATIONS));
-
-	// The minimum number of iterations that would lead to the same lower band as the input
-	const int boundary = intensity * MAX_ITERATIONS / (PALLETE_SIZE - 1);
-
-	// The factor by which the number of iterations is closer to the
-	// upper band compared to the lower band (0 means at lower, 1 means at upper)
-	const double normalized_progress =
-		(double)(iterations - boundary) / ((double)MAX_ITERATIONS / (PALLETE_SIZE - 1));
-
-	return PALLETE[intensity] + (PALLETE[intensity + 1] - PALLETE[intensity]) * normalized_progress;
+	int integer = static_cast<int>(std::floor(iterations));
+	double decimal = iterations - (double)integer;
+	return PALLETE[integer % PALLETE_SIZE] +
+		(PALLETE[(integer + 1) % PALLETE_SIZE] - PALLETE[integer % PALLETE_SIZE]) * decimal;
 }
 
 Complex get_coordinate(int row, int col) {
