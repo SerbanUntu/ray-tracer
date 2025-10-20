@@ -10,7 +10,7 @@ private:
 	double radius;
 
 public:
-	Sphere(Vec3 _center, double _radius, const Material* _mat) : center(_center), radius(_radius), Object(_mat) {}
+	Sphere(Vec3 _center, double _radius, std::unique_ptr<const Material> _mat) : center(_center), radius(_radius), Object(std::move(_mat)) {}
 	Vec3 get_center() const { return center; }
 	double get_radius() const { return radius; }
 	double ray_intersection(Ray r) const override {
@@ -29,4 +29,5 @@ public:
 	Vec3 get_normal(Vec3 point) const override {
 		return (point - center).to_normalized();
 	}
+	std::string get_type() const override { return "Sphere"; }
 };

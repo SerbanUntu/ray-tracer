@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <memory>
 #include "util/vec3.h"
 #include "camera.h"
 #include "shapes/object.h"
@@ -11,7 +12,7 @@ struct RayTracerSceneConfig {
 	Vec3 sky_color;
 	Camera camera;
 
-	std::vector<Object> objects;
+	std::vector<std::unique_ptr<Object>> objects;
 
 	// Post-processing
 	bool is_shading_thresholded;

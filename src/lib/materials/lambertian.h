@@ -14,4 +14,8 @@ public:
 	Vec3 get_color(Ray ray_in, Vec3 intersection, Vec3 normal) const override {
 		return albedo;
 	}
+	Vec3 get_albedo() const {
+		return albedo;
+	}
+	std::string get_type() const override { return "Lambertian"; }
 };

@@ -37,6 +37,9 @@ public:
 	}
 	int get_width() const { return width; }
 	int get_height() const { return height; }
+	int get_color_channels() const { return color_channels; }
+	bool get_is_grayscale() const { return is_grayscale; }
+	const std::vector<Vec3>& get_data() const { return data; }
 	Vec3 get_color(int x, int y) const {
 		return data[x * width + y];
 	}

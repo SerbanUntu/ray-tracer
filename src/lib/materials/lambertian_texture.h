@@ -10,4 +10,6 @@ public:
 	Vec3 get_color(Ray ray_in, Vec3 intersection, Vec3 normal) const override {
 		return cm.get_color_at_point(normal);
 	}
+	const Cubemap& get_cubemap() const { return cm; }
+	std::string get_type() const override { return "LambertianTexture"; }
 };

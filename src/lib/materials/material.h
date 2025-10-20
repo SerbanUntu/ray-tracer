@@ -23,4 +23,5 @@ public:
 	}
 	virtual Ray get_scattered(Ray ray_in, Vec3 intersection, Vec3 normal) const = 0;
 	virtual Vec3 get_color(Ray ray_in, Vec3 intersection, Vec3 normal) const = 0;
+	virtual std::string get_type() const = 0;
 };

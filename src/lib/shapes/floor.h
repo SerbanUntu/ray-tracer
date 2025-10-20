@@ -5,7 +5,7 @@ class Floor : public Object {
 private:
 	double y;
 public:
-	Floor(double _y, const Material* _mat) : y(_y), Object(_mat) {}
+	Floor(double _y, std::unique_ptr<const Material> _mat) : y(_y), Object(std::move(_mat)) {}
 	double get_y() const { return y; }
 	double ray_intersection(Ray r) const override {
 		return (y - r.origin.y) / r.direction.y;
@@ -13,4 +13,5 @@ public:
 	Vec3 get_normal(Vec3 point) const override {
 		return Vec3(0, 1, 0);
 	}
+	std::string get_type() const override { return "Floor"; }
 };

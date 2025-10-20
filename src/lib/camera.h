@@ -23,21 +23,52 @@ struct Pixel {
 
 class Camera {
 public:
-	double screen_left_coord = -1;
-	double screen_right_coord = 1;
-	double screen_bottom_coord = -1;
-	double screen_top_coord = 1;
-	double focal_length = 1;
+	double screen_left_coord = -1.;
+	double screen_right_coord = 1.;
+	double screen_bottom_coord = -1.;
+	double screen_top_coord = 1.;
+	double focal_length = 1.;
 	Vec3 origin = Vec3::ZERO;
 	Vec3 direction = Vec3(0, 0, -1);
 	Vec3 world_up = Vec3(0, 1, 0);
-	int screen_width_pixels = 0; // Must be set
-	int screen_height_pixels = 0; // Must be set
+	int screen_width_pixels = 1920;
+	int screen_height_pixels = 1080;
 	ViewType view_type = PERSPECTIVE;
 	int color_channels = 256;
-	int rays_per_pixel = 0; // Must be set
-	int max_recursion_depth = 0; // Must be set
+	int rays_per_pixel = 4;
+	int max_recursion_depth = 32;
 
+	Camera() {}
+	Camera(
+		double _screen_left_coord,
+		double _screen_right_coord,
+		double _screen_bottom_coord,
+		double _screen_top_coord,
+		double _focal_length,
+		Vec3 _origin,
+		Vec3 _direction,
+		Vec3 _world_up,
+		int _screen_width_pixels,
+		int _screen_height_pixels,
+		ViewType _view_type,
+		int _color_channels,
+		int _rays_per_pixel,
+		int _max_recursion_depth
+	):
+		screen_left_coord(_screen_left_coord),
+		screen_right_coord(_screen_right_coord),
+		screen_bottom_coord(_screen_bottom_coord),
+		screen_top_coord(_screen_top_coord),
+		focal_length(_focal_length),
+		origin(_origin),
+		direction(_direction),
+		world_up(_world_up),
+		screen_width_pixels(_screen_width_pixels),
+		screen_height_pixels(_screen_height_pixels),
+		view_type(_view_type),
+		color_channels(_color_channels),
+		rays_per_pixel(_rays_per_pixel),
+		max_recursion_depth(_max_recursion_depth) {}
 	Ray compute_ray_for_pixel(Pixel p) const {
 
 		//const Vec3 forward = CAMERA_DIRECTION.to_normalized();

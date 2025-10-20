@@ -17,9 +17,14 @@ target_link_libraries(mandelbrot PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(mandelbrot PRIVATE render_lib)
 
 set(MANDELBROT_DATA_PATH "${CMAKE_SOURCE_DIR}/examples/mandelbrot.json")
+set(RAY_TRACER_DATA_PATH "${CMAKE_SOURCE_DIR}/examples/ray-tracer.json")
 
 target_compile_definitions(mandelbrot PRIVATE
     MANDELBROT_DATA_PATH="${MANDELBROT_DATA_PATH}"
+)
+
+target_compile_definitions(ray-tracer PRIVATE
+    RAY_TRACER_DATA_PATH="${RAY_TRACER_DATA_PATH}"
 )
 
 add_custom_command(

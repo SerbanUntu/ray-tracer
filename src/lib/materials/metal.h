@@ -14,4 +14,11 @@ public:
 	Vec3 get_color(Ray ray_in, Vec3 intersection, Vec3 normal) const override {
 		return albedo;
 	}
+	Vec3 get_albedo() const {
+		return albedo;
+	}
+	double get_fuzz() const {
+		return fuzz;
+	}
+	std::string get_type() const override { return "Metal"; }
 };

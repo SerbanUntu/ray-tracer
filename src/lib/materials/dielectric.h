@@ -36,6 +36,10 @@ public:
 	Vec3 get_color(Ray ray_in, Vec3 intersection, Vec3 normal) const override {
 		return Vec3(1, 1, 1);
 	}
+	double get_refractive_index() const {
+		return refractive_index;
+	}
+	std::string get_type() const override { return "Dielectric"; }
 };
 
 inline double Dielectric::AIR_REFRACTIVE_INDEX = 1.;
