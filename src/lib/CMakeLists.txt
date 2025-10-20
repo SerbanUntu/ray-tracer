@@ -1,7 +1,7 @@
 add_library(render_lib
     image.cpp
     util/random_utils.cpp
- "camera.h" "util/complex.h")
+ "camera.h" "util/complex.h" "scene.h")
 
 target_include_directories(render_lib
     PUBLIC

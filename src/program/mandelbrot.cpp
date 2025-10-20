@@ -1,26 +1,13 @@
+#include <iostream>
 #include <string>
+#include <nlohmann/json.hpp>
 #include "image.h"
 #include "util/complex.h"
+#include "scene.h"
 
-struct Point {
-	double x;
-	double y;
-};
-
-constexpr int WIDTH = 4000;
-constexpr double ASPECT_RATIO = 16. / 9.;
-constexpr double ZOOM = 100;
-constexpr int MAX_ITERATIONS = 1000;
-constexpr Point CENTER = Point(0.16125, 0.638438);
-constexpr auto ESCAPE_BOUNDARY_SQUARED = 1 << 8; // Higher = better smoothing
-const std::string FILENAME = "mandelbrot.bmp";
-
-const double LOG_2 = std::log(2);
-constexpr int HEIGHT = WIDTH / ASPECT_RATIO;
-constexpr double LEFT = -(double)ASPECT_RATIO / ZOOM + CENTER.x;
-const double RIGHT = (double)ASPECT_RATIO / ZOOM + CENTER.x;
-const double BOTTOM = -1. / ZOOM + CENTER.y;
-const double TOP = 1 / ZOOM + CENTER.y;
+using json = nlohmann::json;
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Point, x, y)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MandelbrotSceneConfig, center, width, aspect_ratio, zoom, max_iterations, escape_boundary_squared, output_path)
 
 constexpr auto PALLETE_SIZE = 16;
 const Vec3 PALLETE[PALLETE_SIZE] = {
@@ -30,24 +17,25 @@ const Vec3 PALLETE[PALLETE_SIZE] = {
 	Vec3(0.035294, 0.003922, 0.184314), Vec3(0.015686, 0.015686, 0.286275), Vec3(0.000000, 0.027451, 0.392157), Vec3(0.047059, 0.172549, 0.541176)
 };
 
-double calculate_iterations(Complex c) {
+double calculate_iterations(Complex c, int escape_boundary_squared, int max_iterations) {
 	double i = 0;
 	Complex z = Complex::ZERO;
-	while (z.magnitude_squared() < ESCAPE_BOUNDARY_SQUARED && i < MAX_ITERATIONS) {
+	while (z.magnitude_squared() < escape_boundary_squared && i < max_iterations) {
 		z = z.squared() + c;
 		i++;
 	}
 
-	if (i >= MAX_ITERATIONS) return i;
+	if (i >= max_iterations) return i;
 
 	// Smoothing
 	double log_zn = std::log(z.magnitude_squared()) / 2.;
-	double nu = std::log(log_zn / LOG_2) / LOG_2;
+	const double log_2 = std::log(2);
+	double nu = std::log(log_zn / log_2) / log_2;
 	return i + 1 - nu;
 }
 
-Vec3 get_mandelbrot_color(double iterations) {
-	if (iterations >= MAX_ITERATIONS) return Vec3::ZERO;
+Vec3 get_mandelbrot_color(double iterations, int max_iterations) {
+	if (iterations >= max_iterations) return Vec3::ZERO;
 
 	int integer = static_cast<int>(std::floor(iterations));
 	double decimal = iterations - (double)integer;
@@ -55,21 +43,59 @@ Vec3 get_mandelbrot_color(double iterations) {
 		(PALLETE[(integer + 1) % PALLETE_SIZE] - PALLETE[integer % PALLETE_SIZE]) * decimal;
 }
 
-Complex get_coordinate(int row, int col) {
-	double re = LEFT + ((double)col / ((double)WIDTH - 1.)) * (RIGHT - LEFT);
-	double im = TOP + ((double)row / ((double)HEIGHT - 1.)) * (BOTTOM - TOP);
+Complex get_coordinate(int row, int col, MandelbrotSceneSpace mss) {
+	double re = mss.left + ((double)col / ((double)mss.width_pixels - 1.)) * (mss.right - mss.left);
+	double im = mss.top + ((double)row / ((double)mss.height_pixels - 1.)) * (mss.bottom - mss.top);
 	return Complex(re, im);
 }
 
 int main() {
-	Image img = Image(WIDTH, HEIGHT, 256, false);
+	std::ifstream i(MANDELBROT_DATA_PATH);
+
+	json j;
+	i >> j;
+	MandelbrotSceneConfig scene;
+
+	try {
+		scene = j;
+	} catch (const std::exception& e) {
+		std::cerr << "JSON parsing failed: " << e.what() << '\n';
+		return -1;
+	}
+
+	const int HEIGHT = scene.width / scene.aspect_ratio;
+	const double LEFT = -(double)scene.aspect_ratio / scene.zoom + scene.center.x;
+	const double RIGHT = (double)scene.aspect_ratio / scene.zoom + scene.center.x;
+	const double BOTTOM = -1. / scene.zoom + scene.center.y;
+	const double TOP = 1 / scene.zoom + scene.center.y;
+
+	Image img = Image(scene.width, HEIGHT, 256, false);
+	const MandelbrotSceneSpace mss(
+		LEFT,
+		RIGHT,
+		BOTTOM,
+		TOP,
+		HEIGHT,
+		scene.width,
+		scene.center
+	);
 
 	for (int row = 0; row < HEIGHT; row++) {
-		for (int col = 0; col < WIDTH; col++) {
+		for (int col = 0; col < scene.width; col++) {
 			int iterations = -1;
-			img.draw(row, col, get_mandelbrot_color(calculate_iterations(get_coordinate(row, col))));
+			img.draw(row, col, 
+				get_mandelbrot_color(
+					calculate_iterations(
+						get_coordinate(row, col, mss),
+						scene.escape_boundary_squared,
+						scene.max_iterations
+					),
+					scene.max_iterations
+				)
+			);
 		}
 	}
 
-	img.generateBmp(FILENAME);
+	img.generateBmp(scene.output_path);
+	return 0;
 }

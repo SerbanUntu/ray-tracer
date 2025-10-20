@@ -1,0 +1,12 @@
+{
+    "aspect_ratio": 1.6,
+    "center": {
+        "x": 0.16125,
+        "y": 0.63744
+    },
+    "escape_boundary_squared": 256,
+    "max_iterations": 1000,
+    "output_path": "mandelbrot.bmp",
+    "width": 2000,
+    "zoom": 100.0
+}
