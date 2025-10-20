@@ -20,7 +20,7 @@ add_executable(tests tests.cpp)
 
 # Link against gtest_main (provides main())
 target_link_libraries(tests PRIVATE GTest::gtest_main)
-target_link_libraries(tests PRIVATE raytracer_lib)
+target_link_libraries(tests PRIVATE render_lib)
 
 # Enable CTest and test discovery
 include(GoogleTest)
