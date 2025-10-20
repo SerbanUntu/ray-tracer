@@ -1,6 +1,6 @@
 #pragma once
 #include "lambertian.h"
-#include "../cubemap.h"
+#include "cubemap.h"
 
 class LambertianTexture : public Lambertian {
 private:

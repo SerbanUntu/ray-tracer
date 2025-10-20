@@ -6,7 +6,7 @@
 #include <vector>
 #include <filesystem>
 #include "image.h"
-#include "sphere.h"
+#include "shapes/sphere.h"
 #include "util/vec3.h"
 
 enum TextureExtension {

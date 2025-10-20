@@ -2,8 +2,8 @@
 #include <vector>
 #include "util/vec3.h"
 #include "camera.h"
-#include "object.h"
-#include "cubemap.h"
+#include "shapes/object.h"
+#include "materials/cubemap.h"
 #include "materials/material.h"
 
 struct RayTracerSceneConfig {
