@@ -99,9 +99,17 @@ Key parameters can be modified in the source files:
 - **Scene objects**: Position, size, and material properties
 - **Rendering effects**: Background colors, shading thresholds, grayscale mode
 
-<!-- [Image: Sample ray traced scene showing two spheres on a reflective floor] -->
+---
 
-<!-- [Image: Mandelbrot set visualization with color gradient] -->
+![Ray tracer scene](./assets/raytracer.bmp)
+*A steel ball and a yellow Lambertian ball on a purple metallic surface*
+
+---
+
+![Mandelbrot visualisation](./assets/mandelbrot.bmp)
+*Mandelbrot visualisation centered at (0.16125, 0.63744) with 100x zoom. Uses smooth shading and periodic coloring.*
+
+---
 
 ### Testing
 
