@@ -1,7 +1,17 @@
-add_library(render_lib
-    image.cpp
-    util/random_utils.cpp
- "camera.h" "util/complex.h" "scene.h")
+add_library(
+    render_lib
+    "camera.cpp"
+    "image.cpp"
+    "util/random_utils.cpp"
+    "materials/dielectric.cpp"
+    "materials/lambertian.cpp"
+    "materials/lambertian_texture.cpp"
+    "materials/cubemap.cpp"
+    "materials/metal.cpp"
+    "materials/material.cpp" 
+    "shapes/floor.cpp"
+    "shapes/sphere.cpp"
+)
 
 target_include_directories(render_lib
     PUBLIC

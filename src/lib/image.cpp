@@ -25,6 +25,47 @@ static void write_n_bytes(std::vector<std::byte>& vec, int n, int data) {
 	}
 }
 
+void Image::validate_dimensions(int x, int y) const {
+	if (x >= height) throw std::invalid_argument("Height exceeded");
+	if (y >= width) throw std::invalid_argument("Width exceeded");
+}
+
+Image::Image(int _width, int _height, int _channels, bool _is_grayscale) :
+	width(_width), height(_height), color_channels(_channels), is_grayscale(_is_grayscale) {
+	for (int i = 0; i < _width * _height; i++) {
+		data.push_back(Vec3::ZERO);
+	}
+}
+
+Image::Image(Vec3 color) :
+	width(1), height(1), color_channels(256), is_grayscale(false) {
+	data.push_back(color);
+}
+
+void Image::draw(int x, int y, Vec3 color) {
+	validate_dimensions(x, y);
+	data[x * width + y] = color;
+}
+
+void Image::add_color(int x, int y, Vec3 color) {
+	validate_dimensions(x, y);
+	data[x * width + y] += color;
+}
+
+int Image::get_width() const { return width; }
+
+int Image::get_height() const { return height; }
+
+int Image::get_color_channels() const { return color_channels; }
+
+bool Image::get_is_grayscale() const { return is_grayscale; }
+
+const std::vector<Vec3>& Image::get_data() const { return data; }
+
+Vec3 Image::get_color(int x, int y) const {
+	return data[x * width + y];
+}
+
 void Image::generateBmp(std::string file_name) {
 	// Writing the header
 	std::vector<std::byte> image_bytes;
@@ -105,3 +146,4 @@ void Image::generateBmp(std::string file_name) {
 	image_file.write(reinterpret_cast<const char*>(image_bytes.data()), image_bytes.size());
 	image_file.close();
 }
+

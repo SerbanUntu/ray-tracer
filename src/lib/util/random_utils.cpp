@@ -1,4 +1,4 @@
-#include<random>
+#include <random>
 #include "random_utils.h"
 
 std::uniform_real_distribution<> dist(-1., 1.);
