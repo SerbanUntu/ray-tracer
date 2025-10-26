@@ -1,11 +1,14 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include "util/vec3.h"
 #include "camera.h"
 #include "shapes/object.h"
 #include "materials/cubemap.h"
 #include "materials/material.h"
+
+using json = nlohmann::json;
 
 struct RayTracerSceneConfig {
 	Vec3 background_color;
@@ -27,6 +30,8 @@ struct Point {
 	double y;
 };
 
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Point, x, y);
+
 struct MandelbrotSceneConfig {
 	Point center;
 	int width;
@@ -36,6 +41,17 @@ struct MandelbrotSceneConfig {
 	int escape_boundary_squared;
 	std::string output_path;
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+	MandelbrotSceneConfig,
+	center,
+	width,
+	aspect_ratio,
+	zoom,
+	max_iterations,
+	escape_boundary_squared,
+	output_path
+);
 
 struct MandelbrotSceneSpace {
 	double left;

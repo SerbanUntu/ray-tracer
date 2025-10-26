@@ -2,12 +2,6 @@
 # project specific logic here.
 #
 
-# Add source to this project's executable.
-include(FetchContent)
-
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
-FetchContent_MakeAvailable(json)
-
 add_executable (ray-tracer "ray-tracer.cpp")
 add_executable (mandelbrot "mandelbrot.cpp")
 

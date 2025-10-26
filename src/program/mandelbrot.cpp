@@ -6,10 +6,6 @@
 #include "util/complex.h"
 #include "scene.h"
 
-using json = nlohmann::json;
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Point, x, y)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MandelbrotSceneConfig, center, width, aspect_ratio, zoom, max_iterations, escape_boundary_squared, output_path)
-
 constexpr auto PALLETE_SIZE = 16;
 const Vec3 PALLETE[PALLETE_SIZE] = {
 	Vec3(0.094118, 0.321569, 0.694118), Vec3(0.223529, 0.490196, 0.819608), Vec3(0.525490, 0.709804, 0.898039), Vec3(0.827451, 0.925490, 0.972549),
