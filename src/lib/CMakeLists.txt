@@ -12,7 +12,7 @@ add_library(
     "materials/material.cpp" 
     "shapes/floor.cpp"
     "shapes/sphere.cpp"
-)
+ "util/terminal.h" "util/terminal.cpp")
 
 target_include_directories(render_lib
     PUBLIC

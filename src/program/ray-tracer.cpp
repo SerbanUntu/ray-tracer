@@ -9,12 +9,14 @@
 #include <cstdint>
 #include <random>
 #include <memory>
+#include <chrono>
 #include <nlohmann/json.hpp>
 #include "image.h"
 #include "scene.h"
 #include "shapes/floor.h"
 #include "shapes/sphere.h"
 #include "util/vec3.h"
+#include "util/terminal.h"
 #include "util/random_utils.h"
 #include "materials/lambertian.h"
 #include "materials/lambertian_texture.h"
@@ -23,7 +25,10 @@
 #include "materials/cubemap.h"
 #include "camera.h"
 
+using namespace std::chrono;
 using json = nlohmann::json;
+
+constexpr auto STDOUT_REFRESH_INTERVAL_MS = 100;
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Vec3, x, y, z)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Camera, screen_left_coord, screen_right_coord, screen_bottom_coord, screen_top_coord, focal_length, origin, direction, world_up, screen_width_pixels, screen_height_pixels, view_type, color_channels, rays_per_pixel, max_recursion_depth)
@@ -140,7 +145,22 @@ int main()
 		scene.is_grayscale
 	);
 
+	std::cout << "Rendering the scene...\n";
+
+	auto start = high_resolution_clock::now();
+
 	for (int i = 0; i < scene.camera.screen_width_pixels; i++) {
+		auto now = high_resolution_clock::now();
+		auto dur = duration_cast<milliseconds>(now - start);
+
+		if (i == 0 || 
+			i == scene.camera.screen_width_pixels - 1 || 
+			dur.count() > STDOUT_REFRESH_INTERVAL_MS) {
+			clear_current_stdout_row();
+			display_percentage(i + 1, scene.camera.screen_width_pixels, "column");
+			start = now;
+		}
+
 		for (int j = 0; j < scene.camera.screen_height_pixels; j++) {
 
 			Vec3 pixel_color = Vec3(0, 0, 0);
@@ -154,6 +174,9 @@ int main()
 			img.draw(i, j, pixel_color / scene.camera.rays_per_pixel);
 		}
 	}
+
+	std::cout << "\nRendered!\n\nSaving to " << scene.output_path << "...";
 	img.generateBmp(scene.output_path);
+	std::cout << "\nSaved!\n";
 	return 0;
 }

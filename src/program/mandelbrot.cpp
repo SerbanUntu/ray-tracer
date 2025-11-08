@@ -1,11 +1,16 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <chrono>
 #include <nlohmann/json.hpp>
 #include "image.h"
 #include "util/complex.h"
+#include "util/terminal.h"
 #include "scene.h"
 
+using namespace std::chrono;
+
+constexpr auto STDOUT_REFRESH_INTERVAL_MS = 100;
 constexpr auto PALLETE_SIZE = 16;
 const Vec3 PALLETE[PALLETE_SIZE] = {
 	Vec3(0.094118, 0.321569, 0.694118), Vec3(0.223529, 0.490196, 0.819608), Vec3(0.525490, 0.709804, 0.898039), Vec3(0.827451, 0.925490, 0.972549),
@@ -46,6 +51,7 @@ Complex get_coordinate(int row, int col, MandelbrotSceneSpace mss) {
 	return Complex(re, im);
 }
 
+
 int main() {
 	std::ifstream i(MANDELBROT_DATA_PATH);
 
@@ -77,7 +83,20 @@ int main() {
 		scene.center
 	);
 
+	std::cout << "Rendering the mandelbrot set...\n";
+
+	auto start = high_resolution_clock::now();
+
 	for (int row = 0; row < HEIGHT; row++) {
+		auto now = high_resolution_clock::now();
+		auto dur = duration_cast<milliseconds>(now - start);
+
+		if (row == 0 || row == HEIGHT - 1 || dur.count() > STDOUT_REFRESH_INTERVAL_MS) {
+			clear_current_stdout_row();
+			display_percentage(row + 1, HEIGHT, "row");
+			start = now;
+		}
+
 		for (int col = 0; col < scene.width; col++) {
 			int iterations = -1;
 			img.draw(row, col, 
@@ -93,6 +112,8 @@ int main() {
 		}
 	}
 
+	std::cout << "\nRendered!\n\nSaving to " << scene.output_path << "...";
 	img.generateBmp(scene.output_path);
+	std::cout << "\nSaved!\n";
 	return 0;
 }
