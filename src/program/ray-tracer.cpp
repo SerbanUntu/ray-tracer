@@ -3,6 +3,7 @@
 #include <array>
 #include <math.h>
 #include <algorithm>
+#include <cfloat>
 #include <fstream>
 #include <string>
 #include <cstddef>

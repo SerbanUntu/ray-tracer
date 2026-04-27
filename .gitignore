@@ -13,4 +13,6 @@ CMakeUserPresets.json
 
 out/
 .vs/
+.idea/
+cmake-build-debug/
 TODOS.md

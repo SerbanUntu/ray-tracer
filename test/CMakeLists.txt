@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 4.2)
 
 include(FetchContent)
 
@@ -6,7 +6,7 @@ include(FetchContent)
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        release-1.11.0
+    GIT_TAG        v1.17.0
 )
 
 # For Windows: prevent overriding parent project's compiler/linker settings

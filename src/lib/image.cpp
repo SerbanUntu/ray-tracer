@@ -1,9 +1,9 @@
 #include "image.h"
 #include <algorithm>
-#include <math.h>
-#include <iostream>
+#include <cmath>
 #include <fstream>
 #include <cstddef>
+#include <cstdint>
 
 static std::byte doubleToColorByte(double value, int channels) {
 	if (std::isnan(value) || value < 0.0) value = 0.0;
