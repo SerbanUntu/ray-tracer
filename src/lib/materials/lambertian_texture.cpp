@@ -11,5 +11,3 @@ Vec3 LambertianTexture::get_color(const Ray& ray_in, const Vec3& intersection, c
 }
 
 const Cubemap& LambertianTexture::get_cubemap() const { return cm; }
-
-std::string LambertianTexture::get_type() const { return "LambertianTexture"; }

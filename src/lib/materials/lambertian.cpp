@@ -23,5 +23,3 @@ Vec3 Lambertian::get_albedo() const
 {
     return albedo;
 }
-
-std::string Lambertian::get_type() const { return "Lambertian"; }

@@ -9,7 +9,7 @@ Ray Dielectric::get_scattered(const Ray& ray_in, const Vec3& intersection, const
 {
     const double cosine = ray_in.direction.to_normalized() * normal.to_normalized();
 
-    const double eta_in = AIR_REFRACTIVE_INDEX;
+    constexpr double eta_in = AIR_REFRACTIVE_INDEX;
     const double eta_out = refractive_index;
     double ratio = eta_in / eta_out;
 
@@ -43,7 +43,3 @@ double Dielectric::get_refractive_index() const
 {
     return refractive_index;
 }
-
-std::string Dielectric::get_type() const { return "Dielectric"; }
-
-double Dielectric::AIR_REFRACTIVE_INDEX = 1.;

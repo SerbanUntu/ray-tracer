@@ -24,5 +24,3 @@ double Metal::get_fuzz() const
 {
     return fuzz;
 }
-
-std::string Metal::get_type() const { return "Metal"; }

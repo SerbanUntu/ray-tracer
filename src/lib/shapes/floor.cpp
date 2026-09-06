@@ -16,5 +16,3 @@ Vec3 Floor::get_normal(const Vec3& point) const
 {
     return {0, 1, 0};
 }
-
-std::string Floor::get_type() const { return "Floor"; }

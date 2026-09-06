@@ -29,5 +29,3 @@ Vec3 Sphere::get_normal(const Vec3& point) const
 {
     return (point - center).to_normalized();
 }
-
-std::string Sphere::get_type() const { return "Sphere"; }

@@ -10,5 +10,5 @@ public:
     [[nodiscard]] double get_y() const;
     [[nodiscard]] double ray_intersection(const Ray& r) const override;
     [[nodiscard]] Vec3 get_normal(const Vec3& point) const override;
-    [[nodiscard]] std::string get_type() const override;
+    [[nodiscard]] ObjectType get_type() const override { return ObjectType::FLOOR; }
 };
