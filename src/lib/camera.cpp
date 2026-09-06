@@ -2,23 +2,21 @@
 #include <iostream>
 #include "util/random_utils.h"
 
-Camera::Camera() {}
-
 Camera::Camera(
-	double _screen_left_coord,
-	double _screen_right_coord,
-	double _screen_bottom_coord,
-	double _screen_top_coord,
-	double _focal_length,
-	Vec3 _origin,
-	Vec3 _direction,
-	Vec3 _world_up,
-	int _screen_width_pixels,
-	int _screen_height_pixels,
-	ViewType _view_type,
-	int _color_channels,
-	int _rays_per_pixel,
-	int _max_recursion_depth
+	const double _screen_left_coord,
+	const double _screen_right_coord,
+	const double _screen_bottom_coord,
+	const double _screen_top_coord,
+	const double _focal_length,
+	const Vec3& _origin,
+	const Vec3& _direction,
+	const Vec3& _world_up,
+	const int _screen_width_pixels,
+	const int _screen_height_pixels,
+	const ViewType _view_type,
+	const int _color_channels,
+	const int _rays_per_pixel,
+	const int _max_recursion_depth
 ) :
 	screen_left_coord(_screen_left_coord),
 	screen_right_coord(_screen_right_coord),
@@ -36,7 +34,7 @@ Camera::Camera(
 	max_recursion_depth(_max_recursion_depth) {
 }
 
-Ray Camera::compute_ray_for_pixel(Pixel p) const {
+Ray Camera::compute_ray_for_pixel(const Pixel p) const {
 
 	//const Vec3 forward = CAMERA_DIRECTION.to_normalized();
 	//const Vec3 right = forward.cross(WORLD_UP).to_normalized();
@@ -61,22 +59,22 @@ Ray Camera::compute_ray_for_pixel(Pixel p) const {
 	//	return Ray(ray_origin.to_normalized(), forward.to_normalized());
 	//}
 
-	const double CAMERA_LEFT = static_cast<double>(screen_left_coord * screen_width_pixels) / screen_height_pixels;
-	const double CAMERA_RIGHT = static_cast<double>(screen_right_coord * screen_width_pixels) / screen_height_pixels;
+	const double CAMERA_LEFT = screen_left_coord * screen_width_pixels / screen_height_pixels;
+	const double CAMERA_RIGHT = screen_right_coord * screen_width_pixels / screen_height_pixels;
 
 	// Random sampling is disabled when there is a single ray per pixel
-	const double RANDOM_X = (double)p.x + ((rays_per_pixel > 1) ? offset_dist(gen) : 0);
-	const double RANDOM_Y = (double)p.y + ((rays_per_pixel > 1) ? offset_dist(gen) : 0);
+	const double RANDOM_X = static_cast<double>(p.x) + (rays_per_pixel > 1 ? offset_dist(get_generator()) : 0);
+	const double RANDOM_Y = static_cast<double>(p.y) + (rays_per_pixel > 1 ? offset_dist(get_generator()) : 0);
 
-	const double u = CAMERA_LEFT + (RANDOM_Y / (double)screen_width_pixels) * (CAMERA_RIGHT - CAMERA_LEFT);
-	const double v = screen_top_coord + (RANDOM_X / (double)screen_height_pixels) * (screen_bottom_coord - screen_top_coord);
+	const double u = CAMERA_LEFT + RANDOM_Y / static_cast<double>(screen_width_pixels) * (CAMERA_RIGHT - CAMERA_LEFT);
+	const double v = screen_top_coord + RANDOM_X / static_cast<double>(screen_height_pixels) * (screen_bottom_coord - screen_top_coord);
 
-	if (view_type == PERSPECTIVE) {
-		Vec3 ray_direction = Vec3(u, v, -focal_length);
+	if (view_type == ViewType::PERSPECTIVE) {
+		const auto ray_direction = Vec3(u, v, -focal_length);
 		return Ray(origin, ray_direction);
 	}
-	else if (view_type == ORTHOGRAPHIC) {
-		Vec3 ray_origin = Vec3(u, v, 0) + origin;
+	if (view_type == ViewType::ORTHOGRAPHIC) {
+		const auto ray_origin = Vec3(u, v, 0) + origin;
 		return Ray(ray_origin, Vec3(0, 0, -1));
 	}
 
@@ -86,62 +84,58 @@ Ray Camera::compute_ray_for_pixel(Pixel p) const {
 
 CameraBuilder::CameraBuilder() : camera(Camera()) {};
 
-CameraBuilder* CameraBuilder::create() {
-	return new CameraBuilder();
-}
-
-CameraBuilder* CameraBuilder::with_screen_dimensions(int width, int height) {
+CameraBuilder& CameraBuilder::with_screen_dimensions(const int width, const int height) & {
 	camera.screen_width_pixels = width;
 	camera.screen_height_pixels = height;
-	return this;
+	return *this;
 }
 
-CameraBuilder* CameraBuilder::with_focal_length(double focal_length) {
+CameraBuilder& CameraBuilder::with_focal_length(const double focal_length) & {
 	camera.focal_length = focal_length;
-	return this;
+	return *this;
 }
 
-CameraBuilder* CameraBuilder::with_origin(Vec3 origin) {
+CameraBuilder& CameraBuilder::with_origin(Vec3 origin) & {
 	camera.origin = origin;
-	return this;
+	return *this;
 }
 
-CameraBuilder* CameraBuilder::with_direction(Vec3 direction) {
+CameraBuilder& CameraBuilder::with_direction(Vec3 direction) & {
 	camera.direction = direction;
-	return this;
+	return *this;
 }
 
-CameraBuilder* CameraBuilder::with_world_up(Vec3 direction) {
+CameraBuilder& CameraBuilder::with_world_up(Vec3 direction) & {
 	camera.direction = direction;
-	return this;
+	return *this;
 }
 
-CameraBuilder* CameraBuilder::with_virtual_screen_boundaries(double left, double top, double right, double bottom) {
+CameraBuilder& CameraBuilder::with_virtual_screen_boundaries(const double left, const double top, const double right, const double bottom) & {
 	camera.screen_left_coord = left;
 	camera.screen_top_coord = top;
 	camera.screen_right_coord = right;
 	camera.screen_bottom_coord = bottom;
-	return this;
+	return *this;
 }
 
-CameraBuilder* CameraBuilder::with_view_type(ViewType view_type) {
+CameraBuilder& CameraBuilder::with_view_type(const ViewType view_type) & {
 	camera.view_type = view_type;
-	return this;
+	return *this;
 }
 
-CameraBuilder* CameraBuilder::with_color_channels(int color_channels) {
+CameraBuilder& CameraBuilder::with_color_channels(const int color_channels) & {
 	camera.color_channels = color_channels;
-	return this;
+	return *this;
 }
 
-CameraBuilder* CameraBuilder::with_rays_per_pixel(int rays_per_pixel) {
+CameraBuilder& CameraBuilder::with_rays_per_pixel(const int rays_per_pixel) & {
 	camera.rays_per_pixel = rays_per_pixel;
-	return this;
+	return *this;
 }
 
-CameraBuilder* CameraBuilder::with_max_recursion_depth(int max_recursion_depth) {
+CameraBuilder& CameraBuilder::with_max_recursion_depth(const int max_recursion_depth) & {
 	camera.max_recursion_depth = max_recursion_depth;
-	return this;
+	return *this;
 }
 
 Camera CameraBuilder::build() const {

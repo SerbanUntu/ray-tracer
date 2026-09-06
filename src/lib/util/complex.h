@@ -1,29 +1,35 @@
 #pragma once
-#include <math.h>
+#include <cmath>
 
-class Complex {
-private:
-	double re;
-	double im;
-public:
-	Complex(double _re, double _im) : re(_re), im(_im) {};
-	static const Complex ZERO;
+struct Complex
+{
+    double re;
+    double im;
 
-	double real_part() const { return re; }
-	double imaginary_part() const { return im; }
-	Complex squared() const { return Complex(re * re - im * im, 2 * re * im); }
-	Complex conjugate() const { return Complex(re, -im); }
-	double magnitude() const { return std::sqrt(re * re + im * im); }
-	double magnitude_squared() const { return re * re + im * im; }
+    constexpr Complex(const double _re, const double _im) : re(_re), im(_im)
+    {
+    }
 
-	Complex operator-() const { return Complex(-re, -im); }
-	Complex operator+(Complex const& other) const {
-		return Complex(re + other.re, im + other.im);
-	}
-	Complex operator-(Complex const& other) const {
-		return Complex(re - other.re, im - other.im);
-	}
+    static const Complex ZERO;
 
+    [[nodiscard]] constexpr double real_part() const { return re; }
+    [[nodiscard]] constexpr double imaginary_part() const { return im; }
+    [[nodiscard]] constexpr Complex squared() const { return {re * re - im * im, 2 * re * im}; }
+    [[nodiscard]] constexpr Complex conjugate() const { return {re, -im}; }
+    [[nodiscard]] double magnitude() const { return std::sqrt(re * re + im * im); }
+    [[nodiscard]] constexpr double magnitude_squared() const { return re * re + im * im; }
+
+    constexpr Complex operator-() const { return {-re, -im}; }
+
+    constexpr Complex operator+(Complex const& other) const
+    {
+        return {re + other.re, im + other.im};
+    }
+
+    constexpr Complex operator-(Complex const& other) const
+    {
+        return {re - other.re, im - other.im};
+    }
 };
 
-inline const Complex Complex::ZERO = Complex(0, 0);
+inline constexpr Complex Complex::ZERO = {0, 0};

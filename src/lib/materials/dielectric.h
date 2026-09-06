@@ -2,15 +2,15 @@
 #include <string>
 #include "material.h"
 
-class Dielectric : public Material {
-private:
-	static double AIR_REFRACTIVE_INDEX;
-	double refractive_index;
-public:
-	Dielectric(double eta);
-	Ray get_scattered(Ray ray_in, Vec3 intersection, Vec3 normal) const override;
-	Vec3 get_color(Ray ray_in, Vec3 intersection, Vec3 normal) const override;
-	double get_refractive_index() const;
-	std::string get_type() const override;
-};
+class Dielectric : public Material
+{
+    static double AIR_REFRACTIVE_INDEX;
+    double refractive_index;
 
+public:
+    explicit Dielectric(double eta);
+    [[nodiscard]] Ray get_scattered(const Ray& ray_in, const Vec3& intersection, const Vec3& normal) const override;
+    [[nodiscard]] Vec3 get_color(const Ray& ray_in, const Vec3& intersection, const Vec3& normal) const override;
+    [[nodiscard]] double get_refractive_index() const;
+    [[nodiscard]] std::string get_type() const override;
+};

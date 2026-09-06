@@ -2,6 +2,8 @@
 # and include sub-projects here.
 #
 cmake_minimum_required (VERSION 4.2)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)

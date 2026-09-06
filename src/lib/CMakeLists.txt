@@ -2,7 +2,6 @@ add_library(
     render_lib
     "camera.cpp"
     "image.cpp"
-    "scene.cpp"
     "util/random_utils.cpp"
     "materials/dielectric.cpp"
     "materials/lambertian.cpp"

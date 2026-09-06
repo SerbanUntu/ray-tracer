@@ -1,18 +1,18 @@
 #pragma once
-#include <math.h>
 #include "util/vec3.h"
 #include "camera.h"
 #include "object.h"
 
-class Sphere : public Object {
-private:
-	Vec3 center;
-	double radius;
+class Sphere : public Object
+{
+    Vec3 center;
+    double radius;
+
 public:
-	Sphere(Vec3 _center, double _radius, std::unique_ptr<const Material> _mat);
-	Vec3 get_center() const;
-	double get_radius() const;
-	double ray_intersection(Ray r) const override;
-	Vec3 get_normal(Vec3 point) const override;
-	std::string get_type() const override;
+    Sphere(std::unique_ptr<const Material> _mat, const Vec3& _center, double _radius);
+    [[nodiscard]] Vec3 get_center() const;
+    [[nodiscard]] double get_radius() const;
+    [[nodiscard]] double ray_intersection(const Ray& r) const override;
+    [[nodiscard]] Vec3 get_normal(const Vec3& point) const override;
+    [[nodiscard]] std::string get_type() const override;
 };

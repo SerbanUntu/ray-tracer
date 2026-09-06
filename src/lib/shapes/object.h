@@ -4,13 +4,19 @@
 #include "util/vec3.h"
 #include "materials/material.h"
 
-class Object {
-private:
-	std::unique_ptr<const Material> mat;
+class Object
+{
+    std::unique_ptr<const Material> mat;
+
 public:
-	Object(std::unique_ptr<const Material> _mat) : mat(std::move(_mat)) {}
-	const Material* get_material() const { return mat.get(); }
-	virtual double ray_intersection(Ray r) const = 0;
-	virtual Vec3 get_normal(Vec3 point) const = 0;
-	virtual std::string get_type() const = 0;
+    virtual ~Object() = default;
+
+    explicit Object(std::unique_ptr<const Material> _mat) : mat(std::move(_mat))
+    {
+    }
+
+    [[nodiscard]] const Material* get_material() const { return mat.get(); }
+    [[nodiscard]] virtual double ray_intersection(const Ray& r) const = 0;
+    [[nodiscard]] virtual Vec3 get_normal(const Vec3& point) const = 0;
+    [[nodiscard]] virtual std::string get_type() const = 0;
 };
