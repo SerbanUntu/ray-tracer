@@ -1,5 +1,7 @@
 #include "common/util/terminal.h"
 
+namespace raytracer::common
+{
 constexpr auto ANSI_ESCAPE = '\33';
 constexpr auto ANSI_CLEAR_ROW = "[2K";
 
@@ -31,3 +33,4 @@ void display_percentage(const int current, const int total, const std::string& q
         << total
         << ')';
 }
+} // namespace raytracer::common

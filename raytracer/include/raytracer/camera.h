@@ -2,6 +2,8 @@
 #include <cstdint>
 #include "common/util/vec3.h"
 
+namespace raytracer::raytracer
+{
 enum class ViewType : std::uint8_t
 {
     ORTHOGRAPHIC,
@@ -10,8 +12,8 @@ enum class ViewType : std::uint8_t
 
 struct Ray
 {
-    Vec3 origin;
-    Vec3 direction;
+    common::Vec3 origin;
+    common::Vec3 direction;
 };
 
 struct Pixel
@@ -28,9 +30,9 @@ public:
     double screen_bottom_coord = -1.0;
     double screen_top_coord = 1.0;
     double focal_length = 1.0;
-    Vec3 origin = Vec3::ZERO;
-    Vec3 direction{0, 0, -1};
-    Vec3 world_up{0, 1, 0};
+    common::Vec3 origin = common::Vec3::ZERO;
+    common::Vec3 direction{0, 0, -1};
+    common::Vec3 world_up{0, 1, 0};
     int screen_width_pixels = 1920;
     int screen_height_pixels = 1080;
     ViewType view_type = ViewType::PERSPECTIVE;
@@ -45,9 +47,9 @@ public:
         double _screen_bottom_coord,
         double _screen_top_coord,
         double _focal_length,
-        const Vec3& _origin,
-        const Vec3& _direction,
-        const Vec3& _world_up,
+        const common::Vec3& _origin,
+        const common::Vec3& _direction,
+        const common::Vec3& _world_up,
         int _screen_width_pixels,
         int _screen_height_pixels,
         ViewType _view_type,
@@ -66,9 +68,9 @@ public:
     CameraBuilder();
     CameraBuilder& with_screen_dimensions(int width, int height) &;
     CameraBuilder& with_focal_length(double focal_length) &;
-    CameraBuilder& with_origin(Vec3 origin) &;
-    CameraBuilder& with_direction(Vec3 direction) &;
-    CameraBuilder& with_world_up(Vec3 direction) &;
+    CameraBuilder& with_origin(common::Vec3 origin) &;
+    CameraBuilder& with_direction(common::Vec3 direction) &;
+    CameraBuilder& with_world_up(common::Vec3 direction) &;
     CameraBuilder& with_virtual_screen_boundaries(double left, double top, double right, double bottom) &;
     CameraBuilder& with_view_type(ViewType view_type) &;
     CameraBuilder& with_color_channels(int color_channels) &;
@@ -76,3 +78,4 @@ public:
     CameraBuilder& with_max_recursion_depth(int max_recursion_depth) &;
     [[nodiscard]] Camera build() const;
 };
+} // namespace raytracer::raytracer

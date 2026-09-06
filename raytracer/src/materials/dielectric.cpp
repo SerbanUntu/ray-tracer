@@ -1,11 +1,13 @@
 #include "raytracer/materials/dielectric.h"
 #include <cmath>
 
+namespace raytracer::raytracer
+{
 Dielectric::Dielectric(const double eta) : refractive_index(eta)
 {
 }
 
-Ray Dielectric::get_scattered(const Ray& ray_in, const Vec3& intersection, const Vec3& normal) const
+Ray Dielectric::get_scattered(const Ray& ray_in, const common::Vec3& intersection, const common::Vec3& normal) const
 {
     const double cosine = ray_in.direction.to_normalized() * normal.to_normalized();
 
@@ -19,8 +21,8 @@ Ray Dielectric::get_scattered(const Ray& ray_in, const Vec3& intersection, const
         ratio = 1. / ratio;
     }
 
-    const Vec3 uv = ray_in.direction.to_normalized();
-    const Vec3 n = normal.to_normalized();
+    const common::Vec3 uv = ray_in.direction.to_normalized();
+    const common::Vec3 n = normal.to_normalized();
 
     const double cos = std::min(-uv * n, 1.);
     const double sin = std::sqrt(1. - std::pow(cos, 2));
@@ -34,7 +36,7 @@ Ray Dielectric::get_scattered(const Ray& ray_in, const Vec3& intersection, const
     return Ray(intersection, refract(ray_in.direction, normal, ratio));
 }
 
-Vec3 Dielectric::get_color(const Ray& ray_in, const Vec3& intersection, const Vec3& normal) const
+common::Vec3 Dielectric::get_color(const Ray& ray_in, const common::Vec3& intersection, const common::Vec3& normal) const
 {
     return {1, 1, 1};
 }
@@ -43,3 +45,4 @@ double Dielectric::get_refractive_index() const
 {
     return refractive_index;
 }
+} // namespace raytracer::raytracer

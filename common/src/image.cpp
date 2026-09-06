@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <stdexcept>
 
+namespace raytracer::common
+{
 std::byte doubleToColorByte(const double value, const int channels)
 {
     double normalizedValue = value;
@@ -147,3 +149,4 @@ void Image::generateBmp(const std::string& file_name) const
     image_file.write(reinterpret_cast<const char*>(image_bytes.data()), static_cast<long long>(image_bytes.size()));
     image_file.close();
 }
+} // namespace raytracer::common

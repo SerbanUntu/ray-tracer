@@ -2,6 +2,8 @@
 #include <vector>
 #include "util/vec3.h"
 
+namespace raytracer::common
+{
 class Image
 {
     std::vector<Vec3> data;
@@ -24,3 +26,4 @@ public:
     [[nodiscard]] const std::vector<Vec3>& get_data() const { return data; }
     [[nodiscard]] Vec3 get_color(const int x, const int y) const { return data[x * width + y]; }
 };
+} // namespace raytracer::common

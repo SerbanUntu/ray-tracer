@@ -4,24 +4,26 @@
 #include <stdexcept>
 #include <utility>
 
-void draw_face(const int i, const int j, const int pos, const std::vector<std::byte>& buffer, Image* img)
+namespace raytracer::raytracer
+{
+void draw_face(const int i, const int j, const int pos, const std::vector<std::byte>& buffer, common::Image* img)
 {
     const double b = std::to_integer<int>(buffer[pos]);
     const double g = std::to_integer<int>(buffer[pos + 1]);
     const double r = std::to_integer<int>(buffer[pos + 2]);
 
-    const auto col = Vec3(r / 255., g / 255., b / 255.);
+    const auto col = common::Vec3(r / 255., g / 255., b / 255.);
 
     img->draw(i, j, col);
 }
 
 Cubemap::Cubemap(const std::string& path, int face_width, int face_height, int color_channels, bool is_grayscale) :
-    top(Image(face_width, face_height, color_channels, is_grayscale)),
-    left(Image(face_width, face_height, color_channels, is_grayscale)),
-    front(Image(face_width, face_height, color_channels, is_grayscale)),
-    right(Image(face_width, face_height, color_channels, is_grayscale)),
-    back(Image(face_width, face_height, color_channels, is_grayscale)),
-    bottom(Image(face_width, face_height, color_channels, is_grayscale))
+    top(common::Image(face_width, face_height, color_channels, is_grayscale)),
+    left(common::Image(face_width, face_height, color_channels, is_grayscale)),
+    front(common::Image(face_width, face_height, color_channels, is_grayscale)),
+    right(common::Image(face_width, face_height, color_channels, is_grayscale)),
+    back(common::Image(face_width, face_height, color_channels, is_grayscale)),
+    bottom(common::Image(face_width, face_height, color_channels, is_grayscale))
 {
     std::vector<std::byte> buffer;
 
@@ -128,7 +130,8 @@ Cubemap::Cubemap(const std::string& path, int face_width, int face_height, int c
     file.close();
 }
 
-Cubemap::Cubemap(Image _top, Image _left, Image _front, Image _right, Image _back, Image _bottom) :
+Cubemap::Cubemap(common::Image _top, common::Image _left, common::Image _front, common::Image _right,
+                 common::Image _back, common::Image _bottom) :
     top(std::move(_top)), left(std::move(_left)), front(std::move(_front)), right(std::move(_right)),
     back(std::move(_back)), bottom(std::move(_bottom))
 {
@@ -140,19 +143,19 @@ Cubemap::Cubemap(Image _top, Image _left, Image _front, Image _right, Image _bac
  @param normal The normal to the sphere surface at that point
  @return A vector representing the color at that point
  */
-Vec3 Cubemap::get_color_at_point(const Vec3& normal) const
+common::Vec3 Cubemap::get_color_at_point(const common::Vec3& normal) const
 {
-    const Vec3 direction = normal.to_normalized();
+    const common::Vec3 direction = normal.to_normalized();
     const double nx = std::abs(direction.x);
     const double ny = std::abs(direction.y);
     const double nz = std::abs(direction.z);
 
-    const auto face_col = [](const double component, const Image& face) -> int
+    const auto face_col = [](const double component, const common::Image& face) -> int
     {
         return std::clamp(static_cast<int>(std::floor((component + 1) / 2 * face.get_width())), 0,
                           face.get_width() - 1);
     };
-    const auto face_row = [](const double component, const Image& face) -> int
+    const auto face_row = [](const double component, const common::Image& face) -> int
     {
         return std::clamp(static_cast<int>(std::floor((component + 1) / 2 * face.get_height())), 0,
                           face.get_height() - 1);
@@ -193,3 +196,4 @@ Vec3 Cubemap::get_color_at_point(const Vec3& normal) const
         return back.get_color(face_row(direction.y, back), face_col(direction.x, back));
     }
 }
+} // namespace raytracer::raytracer

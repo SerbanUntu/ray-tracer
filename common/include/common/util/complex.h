@@ -1,6 +1,8 @@
 #pragma once
 #include <cmath>
 
+namespace raytracer::common
+{
 struct Complex
 {
     double re;
@@ -33,3 +35,4 @@ struct Complex
 };
 
 inline constexpr Complex Complex::ZERO = {0, 0};
+} // namespace raytracer::common

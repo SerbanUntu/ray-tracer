@@ -2,11 +2,13 @@
 #include <nlohmann/json.hpp>
 #include "common/util/point.h"
 
+namespace raytracer::mandelbrot
+{
 using json = nlohmann::json;
 
 struct MandelbrotSceneConfig
 {
-    Point center;
+    common::Point center;
     int width;
     double aspect_ratio;
     double zoom;
@@ -34,5 +36,7 @@ struct MandelbrotSceneSpace
     double top;
     int height_pixels;
     int width_pixels;
-    Point center;
+    common::Point center;
 };
+
+} // namespace raytracer::mandelbrot

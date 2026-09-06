@@ -2,6 +2,8 @@
 #include <cstddef>
 #include "common/image.h"
 
+namespace raytracer::raytracer
+{
 enum class TextureExtension
 {
     REPEAT,
@@ -9,14 +11,15 @@ enum class TextureExtension
     CONSTANT
 };
 
-void draw_face(int i, int j, int pos, const std::vector<std::byte>& buffer, Image* img);
+void draw_face(int i, int j, int pos, const std::vector<std::byte>& buffer, common::Image* img);
 
 class Cubemap
 {
-    Image top, left, front, right, back, bottom;
+    common::Image top, left, front, right, back, bottom;
 
 public:
     Cubemap(const std::string& path, int face_width, int face_height, int color_channels, bool is_grayscale);
-    Cubemap(Image _top, Image _left, Image _front, Image _right, Image _back, Image _bottom);
-    [[nodiscard]] Vec3 get_color_at_point(const Vec3& normal) const;
+    Cubemap(common::Image _top, common::Image _left, common::Image _front, common::Image _right, common::Image _back, common::Image _bottom);
+    [[nodiscard]] common::Vec3 get_color_at_point(const common::Vec3& normal) const;
 };
+} // namespace raytracer::raytracer

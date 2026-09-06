@@ -6,12 +6,14 @@
 #include "camera.h"
 #include "shapes/object.h"
 
+namespace raytracer::raytracer
+{
 using json = nlohmann::json;
 
 struct RayTracerSceneConfig
 {
-    Vec3 background_color;
-    Vec3 sky_color;
+    common::Vec3 background_color;
+    common::Vec3 sky_color;
     Camera camera;
 
     std::vector<std::unique_ptr<Object>> objects;
@@ -23,5 +25,6 @@ struct RayTracerSceneConfig
 
     std::string output_path;
 };
+} // namespace raytracer::raytracer
 
 

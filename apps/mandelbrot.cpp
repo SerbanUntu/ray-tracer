@@ -10,25 +10,31 @@
 #include "common/util/terminal.h"
 #include "mandelbrot/scene.h"
 
+namespace raytracer::mandelbrot
+{
 using namespace std::chrono;
 
 constexpr auto STDOUT_REFRESH_INTERVAL = 100ms;
 constexpr auto PALETTE_SIZE = 16;
-constexpr Vec3 PALETTE[PALETTE_SIZE] = {
-    Vec3(0.094118, 0.321569, 0.694118), Vec3(0.223529, 0.490196, 0.819608), Vec3(0.525490, 0.709804, 0.898039),
-    Vec3(0.827451, 0.925490, 0.972549),
-    Vec3(0.945098, 0.913725, 0.749020), Vec3(0.972549, 0.788235, 0.372549), Vec3(1.000000, 0.666667, 0.000000),
-    Vec3(0.800000, 0.501961, 0.000000),
-    Vec3(0.600000, 0.341176, 0.000000), Vec3(0.415686, 0.203922, 0.011765), Vec3(0.258824, 0.117647, 0.058824),
-    Vec3(0.098039, 0.027451, 0.101961),
-    Vec3(0.035294, 0.003922, 0.184314), Vec3(0.015686, 0.015686, 0.286275), Vec3(0.000000, 0.027451, 0.392157),
-    Vec3(0.047059, 0.172549, 0.541176)
+constexpr common::Vec3 PALETTE[PALETTE_SIZE] = {
+    common::Vec3(0.094118, 0.321569, 0.694118), common::Vec3(0.223529, 0.490196, 0.819608),
+    common::Vec3(0.525490, 0.709804, 0.898039),
+    common::Vec3(0.827451, 0.925490, 0.972549),
+    common::Vec3(0.945098, 0.913725, 0.749020), common::Vec3(0.972549, 0.788235, 0.372549),
+    common::Vec3(1.000000, 0.666667, 0.000000),
+    common::Vec3(0.800000, 0.501961, 0.000000),
+    common::Vec3(0.600000, 0.341176, 0.000000), common::Vec3(0.415686, 0.203922, 0.011765),
+    common::Vec3(0.258824, 0.117647, 0.058824),
+    common::Vec3(0.098039, 0.027451, 0.101961),
+    common::Vec3(0.035294, 0.003922, 0.184314), common::Vec3(0.015686, 0.015686, 0.286275),
+    common::Vec3(0.000000, 0.027451, 0.392157),
+    common::Vec3(0.047059, 0.172549, 0.541176)
 };
 
-double calculate_iterations(const Complex c, const int escape_boundary_squared, const int max_iterations)
+double calculate_iterations(const common::Complex c, const int escape_boundary_squared, const int max_iterations)
 {
     double i = 0;
-    Complex z = Complex::ZERO;
+    common::Complex z = common::Complex::ZERO;
     while (z.magnitude_squared() < escape_boundary_squared && i < max_iterations)
     {
         z = z.squared() + c;
@@ -44,9 +50,9 @@ double calculate_iterations(const Complex c, const int escape_boundary_squared, 
     return i + 1 - nu;
 }
 
-Vec3 get_mandelbrot_color(const double iterations, const int max_iterations)
+common::Vec3 get_mandelbrot_color(const double iterations, const int max_iterations)
 {
-    if (std::isnan(iterations) || iterations >= max_iterations) return Vec3::ZERO;
+    if (std::isnan(iterations) || iterations >= max_iterations) return common::Vec3::ZERO;
 
     const int integer = static_cast<int>(std::floor(iterations));
     const double decimal = iterations - static_cast<double>(integer);
@@ -56,7 +62,7 @@ Vec3 get_mandelbrot_color(const double iterations, const int max_iterations)
     return PALETTE[index] + (PALETTE[next_index] - PALETTE[index]) * decimal;
 }
 
-Complex get_coordinate(const int row, const int col, const MandelbrotSceneSpace& mss)
+common::Complex get_coordinate(const int row, const int col, const MandelbrotSceneSpace& mss)
 {
     // Sample pixel centres, so that a 1-pixel-wide or 1-pixel-tall image does not divide by zero
     double re = mss.left + ((static_cast<double>(col) + .5) / static_cast<double>(mss.width_pixels)) * (mss.right - mss.
@@ -101,7 +107,7 @@ int main()
     const double BOTTOM = -1. / scene.zoom + scene.center.y;
     const double TOP = 1 / scene.zoom + scene.center.y;
 
-    auto img = Image(scene.width, HEIGHT, 256, false);
+    auto img = common::Image(scene.width, HEIGHT, 256, false);
     const MandelbrotSceneSpace mss(
         LEFT,
         RIGHT,
@@ -123,8 +129,8 @@ int main()
                 while (true)
                 {
                     const int current_row = finished_rows.load();
-                    clear_current_stdout_row();
-                    display_percentage(current_row, HEIGHT, "row");
+                    common::clear_current_stdout_row();
+                    common::display_percentage(current_row, HEIGHT, "row");
                     if (current_row >= HEIGHT) return;
                     std::this_thread::sleep_for(STDOUT_REFRESH_INTERVAL);
                 }
@@ -157,11 +163,17 @@ int main()
             });
         }
     }
-    clear_current_stdout_row();
-    display_percentage(HEIGHT, HEIGHT, "row");
+    common::clear_current_stdout_row();
+    common::display_percentage(HEIGHT, HEIGHT, "row");
 
     std::cout << "\nRendered!\n\nSaving to " << scene.output_path << "...";
     img.generateBmp(scene.output_path);
     std::cout << "\nSaved!\n";
     return 0;
+}
+} // namespace raytracer::mandelbrot
+
+int main()
+{
+    return raytracer::mandelbrot::main();
 }

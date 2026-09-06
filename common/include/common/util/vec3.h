@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
 
+namespace raytracer::common
+{
 struct Vec3
 {
     double x;
@@ -90,3 +92,4 @@ inline std::ostream& operator<<(std::ostream& os, Vec3 const& v)
 }
 
 inline constexpr Vec3 Vec3::ZERO = {0, 0, 0};
+} // namespace raytracer::common

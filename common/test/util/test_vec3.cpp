@@ -1,6 +1,8 @@
 #include "common/util/vec3.h"
 #include <gtest/gtest.h>
 
+namespace raytracer::common
+{
 TEST(Vec3Test, CrossProductSimple)
 {
     constexpr Vec3 up{0, 1, 0};
@@ -16,3 +18,4 @@ TEST(Vec3Test, CrossProductComplex)
     constexpr Vec3 three{-3, 6, -3};
     EXPECT_EQ(three, one.cross(two));
 }
+} // namespace raytracer::common

@@ -3,16 +3,19 @@
 #include "../camera.h"
 #include "object.h"
 
+namespace raytracer::raytracer
+{
 class Sphere : public Object
 {
-    Vec3 center;
+    common::Vec3 center;
     double radius;
 
 public:
-    Sphere(std::unique_ptr<const Material> _mat, const Vec3& _center, double _radius);
-    [[nodiscard]] Vec3 get_center() const;
+    Sphere(std::unique_ptr<const Material> _mat, const common::Vec3& _center, double _radius);
+    [[nodiscard]] common::Vec3 get_center() const;
     [[nodiscard]] double get_radius() const;
     [[nodiscard]] double ray_intersection(const Ray& r) const override;
-    [[nodiscard]] Vec3 get_normal(const Vec3& point) const override;
+    [[nodiscard]] common::Vec3 get_normal(const common::Vec3& point) const override;
     [[nodiscard]] ObjectType get_type() const override { return ObjectType::SPHERE; }
 };
+} // namespace raytracer::raytracer

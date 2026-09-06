@@ -1,12 +1,14 @@
 #include "raytracer/shapes/sphere.h"
 
-Sphere::Sphere(std::unique_ptr<const Material> _mat, const Vec3& _center, const double _radius) :
+namespace raytracer::raytracer
+{
+Sphere::Sphere(std::unique_ptr<const Material> _mat, const common::Vec3& _center, const double _radius) :
     Object(std::move(_mat)), center(_center),
     radius(_radius)
 {
 }
 
-Vec3 Sphere::get_center() const { return center; }
+common::Vec3 Sphere::get_center() const { return center; }
 
 double Sphere::get_radius() const { return radius; }
 
@@ -25,7 +27,8 @@ double Sphere::ray_intersection(const Ray& r) const
     return t2;
 }
 
-Vec3 Sphere::get_normal(const Vec3& point) const
+common::Vec3 Sphere::get_normal(const common::Vec3& point) const
 {
     return (point - center).to_normalized();
 }
+} // namespace raytracer::raytracer

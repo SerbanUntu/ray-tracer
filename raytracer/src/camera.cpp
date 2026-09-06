@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include "common/util/random_utils.h"
 
+namespace raytracer::raytracer
+{
 static std::uniform_real_distribution offset_dist(-.5, .5);
 
 Camera::Camera(
@@ -11,9 +13,9 @@ Camera::Camera(
 	const double _screen_bottom_coord,
 	const double _screen_top_coord,
 	const double _focal_length,
-	const Vec3& _origin,
-	const Vec3& _direction,
-	const Vec3& _world_up,
+	const common::Vec3& _origin,
+	const common::Vec3& _direction,
+	const common::Vec3& _world_up,
 	const int _screen_width_pixels,
 	const int _screen_height_pixels,
 	const ViewType _view_type,
@@ -39,26 +41,26 @@ Camera::Camera(
 
 Ray Camera::compute_ray_for_pixel(const Pixel p) const {
 
-	const Vec3 forward = direction.to_normalized();
-	const Vec3 right = forward.cross(world_up).to_normalized();
-	const Vec3 up = right.cross(forward);
+	const common::Vec3 forward = direction.to_normalized();
+	const common::Vec3 right = forward.cross(world_up).to_normalized();
+	const common::Vec3 up = right.cross(forward);
 
 	const double aspect_ratio = static_cast<double>(screen_width_pixels) / screen_height_pixels;
 	const double CAMERA_LEFT = screen_left_coord * aspect_ratio;
 	const double CAMERA_RIGHT = screen_right_coord * aspect_ratio;
 
-	const double RANDOM_X = static_cast<double>(p.x) + .5 + (rays_per_pixel > 1 ? offset_dist(get_generator()) : 0);
-	const double RANDOM_Y = static_cast<double>(p.y) + .5 + (rays_per_pixel > 1 ? offset_dist(get_generator()) : 0);
+	const double RANDOM_X = static_cast<double>(p.x) + .5 + (rays_per_pixel > 1 ? offset_dist(common::get_generator()) : 0);
+	const double RANDOM_Y = static_cast<double>(p.y) + .5 + (rays_per_pixel > 1 ? offset_dist(common::get_generator()) : 0);
 
 	const double u = CAMERA_LEFT + RANDOM_X / static_cast<double>(screen_width_pixels) * (CAMERA_RIGHT - CAMERA_LEFT);
 	const double v = screen_top_coord + RANDOM_Y / static_cast<double>(screen_height_pixels) * (screen_bottom_coord - screen_top_coord);
 
 	if (view_type == ViewType::PERSPECTIVE) {
-		const Vec3 ray_direction = right * u + up * v + forward * focal_length;
+		const common::Vec3 ray_direction = right * u + up * v + forward * focal_length;
 		return Ray(origin, ray_direction);
 	}
 	if (view_type == ViewType::ORTHOGRAPHIC) {
-		const Vec3 ray_origin = right * u + up * v + origin;
+		const common::Vec3 ray_origin = right * u + up * v + origin;
 		return Ray(ray_origin, forward);
 	}
 
@@ -79,17 +81,17 @@ CameraBuilder& CameraBuilder::with_focal_length(const double focal_length) & {
 	return *this;
 }
 
-CameraBuilder& CameraBuilder::with_origin(Vec3 origin) & {
+CameraBuilder& CameraBuilder::with_origin(common::Vec3 origin) & {
 	camera.origin = origin;
 	return *this;
 }
 
-CameraBuilder& CameraBuilder::with_direction(Vec3 direction) & {
+CameraBuilder& CameraBuilder::with_direction(common::Vec3 direction) & {
 	camera.direction = direction;
 	return *this;
 }
 
-CameraBuilder& CameraBuilder::with_world_up(Vec3 direction) & {
+CameraBuilder& CameraBuilder::with_world_up(common::Vec3 direction) & {
 	camera.world_up = direction;
 	return *this;
 }
@@ -140,4 +142,5 @@ Camera CameraBuilder::build() const {
 	}
 	return camera;
 }
+} // namespace raytracer::raytracer
 
