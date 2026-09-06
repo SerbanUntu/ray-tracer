@@ -22,6 +22,8 @@ using namespace std::chrono;
 
 constexpr auto STDOUT_REFRESH_INTERVAL_MS = 100;
 
+constexpr auto MIN_INTERSECTION_DISTANCE = 0.001;
+
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Vec3, x, y, z)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Camera, screen_left_coord, screen_right_coord, screen_bottom_coord, screen_top_coord,
                                    focal_length, origin, direction, world_up, screen_width_pixels, screen_height_pixels,
@@ -38,19 +40,19 @@ static Vec3 shade(const Object& o, const Vec3& intersection, const Ray& r, int d
 
 static Vec3 trace(const Ray& r, const int depth, const int max_depth, const RayTracerSceneConfig& scene)
 {
+    if (depth > max_depth) return Vec3::ZERO;
+
     double min_depth = std::numeric_limits<double>::max();
     Vec3 top_color = depth == 0 ? scene.background_color : scene.sky_color;
-    if (depth > max_depth) return Vec3::ZERO;
 
     for (const auto& oPtr : scene.objects)
     {
         const Object& o = *oPtr;
         const double t = o.ray_intersection(r);
-        const Vec3 intersection = r.origin + r.direction * t;
-        if (t < min_depth && t > 0.001 && intersection.z < -1)
+        if (t < min_depth && t > MIN_INTERSECTION_DISTANCE)
         {
             min_depth = t;
-            top_color = shade(o, intersection, r, depth, max_depth, scene);
+            top_color = shade(o, r.origin + r.direction * t, r, depth, max_depth, scene);
         }
     }
 
@@ -146,31 +148,31 @@ int main()
 
     auto start = high_resolution_clock::now();
 
-    for (int i = 0; i < scene.camera.screen_width_pixels; i++)
+    for (int row = 0; row < scene.camera.screen_height_pixels; row++)
     {
         auto now = high_resolution_clock::now();
         auto dur = duration_cast<milliseconds>(now - start);
 
-        if (i == 0 ||
-            i == scene.camera.screen_width_pixels - 1 ||
+        if (row == 0 ||
+            row == scene.camera.screen_height_pixels - 1 ||
             dur.count() > STDOUT_REFRESH_INTERVAL_MS)
         {
             clear_current_stdout_row();
-            display_percentage(i + 1, scene.camera.screen_width_pixels, "column");
+            display_percentage(row + 1, scene.camera.screen_height_pixels, "row");
             start = now;
         }
 
-        for (int j = 0; j < scene.camera.screen_height_pixels; j++)
+        for (int col = 0; col < scene.camera.screen_width_pixels; col++)
         {
             auto pixel_color = Vec3(0, 0, 0);
 
             for (int k = 0; k < scene.camera.rays_per_pixel; k++)
             {
-                const Ray current_ray = scene.camera.compute_ray_for_pixel(Pixel(i, j));
+                const Ray current_ray = scene.camera.compute_ray_for_pixel(Pixel(col, row));
                 pixel_color += trace(current_ray, 0, scene.camera.max_recursion_depth, scene);
             }
 
-            img.draw(i, j, pixel_color / scene.camera.rays_per_pixel);
+            img.draw(row, col, pixel_color / scene.camera.rays_per_pixel);
         }
     }
 

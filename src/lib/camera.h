@@ -1,8 +1,6 @@
 #pragma once
-#include <random>
+#include <cstdint>
 #include "util/vec3.h"
-
-static std::uniform_real_distribution offset_dist(-.5, .5);
 
 enum class ViewType : std::uint8_t
 {
@@ -18,18 +16,18 @@ struct Ray
 
 struct Pixel
 {
-    int x;
-    int y;
+    int x; // column [0, screen_width_pixels)
+    int y; // row    [0, screen_height_pixels)
 };
 
 class Camera
 {
 public:
-    double screen_left_coord = -1.;
-    double screen_right_coord = 1.;
-    double screen_bottom_coord = -1.;
-    double screen_top_coord = 1.;
-    double focal_length = 1.;
+    double screen_left_coord = -1.0;
+    double screen_right_coord = 1.0;
+    double screen_bottom_coord = -1.0;
+    double screen_top_coord = 1.0;
+    double focal_length = 1.0;
     Vec3 origin = Vec3::ZERO;
     Vec3 direction{0, 0, -1};
     Vec3 world_up{0, 1, 0};
@@ -63,9 +61,9 @@ public:
 class CameraBuilder
 {
     Camera camera;
-    CameraBuilder();
 
 public:
+    CameraBuilder();
     CameraBuilder& with_screen_dimensions(int width, int height) &;
     CameraBuilder& with_focal_length(double focal_length) &;
     CameraBuilder& with_origin(Vec3 origin) &;

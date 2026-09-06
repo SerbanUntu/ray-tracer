@@ -4,15 +4,15 @@
 #include <fstream>
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
 
 std::byte doubleToColorByte(const double value, const int channels)
 {
     double normalizedValue = value;
     if (std::isnan(value) || value < 0.0) normalizedValue = 0.0;
     if (value > 1.0) normalizedValue = 1.0;
-    const double thresholded = static_cast<double>(static_cast<int>(
-            normalizedValue * channels))
-        / channels;
+    const int bucket = std::clamp(static_cast<int>(normalizedValue * channels), 0, channels - 1);
+    const double thresholded = channels > 1 ? static_cast<double>(bucket) / (channels - 1) : 0.0;
     int intVal = static_cast<int>(std::lround(thresholded * 255.0));
     intVal = std::clamp(intVal, 0, 255);
     return static_cast<std::byte>(static_cast<uint8_t>(intVal));
@@ -31,6 +31,8 @@ void write_n_bytes(std::vector<std::byte>& vec, const int n, const int data)
 
 void Image::validate_dimensions(const int x, const int y) const
 {
+    if (x < 0) throw std::invalid_argument("Column cannot be negative");
+    if (y < 0) throw std::invalid_argument("Row cannot be negative");
     if (x >= height) throw std::invalid_argument("Height exceeded");
     if (y >= width) throw std::invalid_argument("Width exceeded");
 }
@@ -38,10 +40,9 @@ void Image::validate_dimensions(const int x, const int y) const
 Image::Image(const int _width, const int _height, const int _channels, const bool _is_grayscale) :
     width(_width), height(_height), color_channels(_channels), is_grayscale(_is_grayscale)
 {
-    for (int i = 0; i < _width * _height; i++)
-    {
-        data.push_back(Vec3::ZERO);
-    }
+    if (_width <= 0 || _height <= 0) throw std::invalid_argument("Image dimensions must be greater than 0");
+    if (_channels <= 0) throw std::invalid_argument("Image color channels must be greater than 0");
+    data.assign(static_cast<size_t>(_width) * static_cast<size_t>(_height), Vec3::ZERO);
 }
 
 Image::Image(const Vec3& color) :
@@ -71,7 +72,10 @@ void Image::generateBmp(const std::string& file_name) const
     image_bytes.push_back(static_cast<std::byte>('B'));
     image_bytes.push_back(static_cast<std::byte>('M'));
 
-    const int file_size = 14 + 40 + 3 * width * height;
+    const int row_size = (3 * width + 3) / 4 * 4;
+    const int size_of_pixel_data = row_size * height;
+
+    const int file_size = 14 + 40 + size_of_pixel_data;
     write_n_bytes(image_bytes, 4, file_size);
 
     constexpr int reserved_field = 0;
@@ -95,7 +99,6 @@ void Image::generateBmp(const std::string& file_name) const
     constexpr int compression = 0;
     write_n_bytes(image_bytes, 4, compression);
 
-    const int size_of_pixel_data = 3 * width * height;
     write_n_bytes(image_bytes, 4, size_of_pixel_data);
 
     constexpr int horizontal_resolution = 2835;

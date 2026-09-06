@@ -1,5 +1,7 @@
 #include "cubemap.h"
+#include <algorithm>
 #include <fstream>
+#include <stdexcept>
 #include <utility>
 
 void draw_face(const int i, const int j, const int pos, const std::vector<std::byte>& buffer, Image* img)
@@ -8,7 +10,7 @@ void draw_face(const int i, const int j, const int pos, const std::vector<std::b
     const double g = std::to_integer<int>(buffer[pos + 1]);
     const double r = std::to_integer<int>(buffer[pos + 2]);
 
-    const auto col = Vec3(r / 256., g / 256., b / 256.);
+    const auto col = Vec3(r / 255., g / 255., b / 255.);
 
     img->draw(i, j, col);
 }
@@ -44,12 +46,18 @@ Cubemap::Cubemap(const std::string& path, int face_width, int face_height, int c
 
     const size_t length = pos;
 
+    constexpr int HEADER_LENGTH = 54;
+
+    const size_t required_length = HEADER_LENGTH + static_cast<size_t>(face_width) * 4 * face_height * 3 * 3;
+    if (length < required_length)
+    {
+        throw std::runtime_error("Cubemap file " + path + " is too small for the requested face dimensions.");
+    }
+
     buffer.resize(length);
 
     file.seekg(0, std::ios::beg);
-    file.read(reinterpret_cast<char*>(&buffer[0]), static_cast<long long>(length));
-
-    constexpr int HEADER_LENGTH = 54;
+    file.read(reinterpret_cast<char*>(buffer.data()), static_cast<long long>(length));
 
     // TOP
     for (int i = 0; i < face_height; i++)
@@ -139,62 +147,49 @@ Vec3 Cubemap::get_color_at_point(const Vec3& normal) const
     const double ny = std::abs(direction.y);
     const double nz = std::abs(direction.z);
 
+    const auto face_col = [](const double component, const Image& face) -> int
+    {
+        return std::clamp(static_cast<int>(std::floor((component + 1) / 2 * face.get_width())), 0,
+                          face.get_width() - 1);
+    };
+    const auto face_row = [](const double component, const Image& face) -> int
+    {
+        return std::clamp(static_cast<int>(std::floor((component + 1) / 2 * face.get_height())), 0,
+                          face.get_height() - 1);
+    };
+
     // TOP
     if (ny >= nz && ny >= nx && direction.y >= 0)
     {
-        const double normalized_x = (direction.x + 1) / 2 * top.get_width();
-        const double normalized_z = (direction.z + 1) / 2 * top.get_height();
-        const int x = static_cast<int>(std::floor(normalized_x));
-        const int z = static_cast<int>(std::floor(normalized_z));
-        return top.get_color(x, z);
+        return top.get_color(face_row(direction.z, top), face_col(direction.x, top));
     }
 
     // BOTTOM
     if (ny >= nz && ny >= nx && direction.y < 0)
     {
-        const double normalized_x = (direction.x + 1) / 2 * bottom.get_width();
-        const double normalized_z = (direction.z + 1) / 2 * bottom.get_height();
-        const int x = static_cast<int>(std::floor(normalized_x));
-        const int z = static_cast<int>(std::floor(normalized_z));
-        return bottom.get_color(x, z);
+        return bottom.get_color(face_row(direction.z, bottom), face_col(direction.x, bottom));
     }
 
     // LEFT
     if (nx >= ny && nx >= nz && direction.x < 0)
     {
-        const double normalized_y = (direction.y + 1) / 2 * left.get_width();
-        const double normalized_z = (direction.z + 1) / 2 * left.get_height();
-        const int y = static_cast<int>(std::floor(normalized_y));
-        const int z = static_cast<int>(std::floor(normalized_z));
-        return left.get_color(y, z);
+        return left.get_color(face_row(direction.z, left), face_col(direction.y, left));
     }
 
     // RIGHT
     if (nx >= ny && nx >= nz && direction.x >= 0)
     {
-        const double normalized_y = (direction.y + 1) / 2 * right.get_width();
-        const double normalized_z = (direction.z + 1) / 2 * right.get_height();
-        const int y = static_cast<int>(std::floor(normalized_y));
-        const int z = static_cast<int>(std::floor(normalized_z));
-        return right.get_color(y, z);
+        return right.get_color(face_row(direction.z, right), face_col(direction.y, right));
     }
 
     // FRONT
     if (nz >= nx && nz >= ny && direction.z >= 0)
     {
-        const double normalized_x = (direction.x + 1) / 2 * front.get_width();
-        const double normalized_y = (direction.y + 1) / 2 * front.get_height();
-        const int x = static_cast<int>(std::floor(normalized_x));
-        const int y = static_cast<int>(std::floor(normalized_y));
-        return front.get_color(x, y);
+        return front.get_color(face_row(direction.y, front), face_col(direction.x, front));
     }
 
     // BACK
     {
-        const double normalized_x = (direction.x + 1) / 2 * back.get_width();
-        const double normalized_y = (direction.y + 1) / 2 * back.get_height();
-        const int x = static_cast<int>(std::floor(normalized_x));
-        const int y = static_cast<int>(std::floor(normalized_y));
-        return back.get_color(x, y);
+        return back.get_color(face_row(direction.y, back), face_col(direction.x, back));
     }
 }

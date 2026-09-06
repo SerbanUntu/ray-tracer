@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include "image.h"
 
 enum class TextureExtension
@@ -8,7 +9,7 @@ enum class TextureExtension
     CONSTANT
 };
 
-void draw_face(int i, int j, int pos, const std::vector<char>& buffer, Image* img);
+void draw_face(int i, int j, int pos, const std::vector<std::byte>& buffer, Image* img);
 
 class Cubemap
 {

@@ -8,6 +8,7 @@ double Floor::get_y() const { return y; }
 
 double Floor::ray_intersection(const Ray& r) const
 {
+    if (r.direction.y == 0) return -1.0;
     return (y - r.origin.y) / r.direction.y;
 }
 

@@ -44,18 +44,21 @@ double calculate_iterations(const Complex c, const int escape_boundary_squared, 
 
 Vec3 get_mandelbrot_color(const double iterations, const int max_iterations)
 {
-    if (iterations >= max_iterations) return Vec3::ZERO;
+    if (std::isnan(iterations) || iterations >= max_iterations) return Vec3::ZERO;
 
     const int integer = static_cast<int>(std::floor(iterations));
     const double decimal = iterations - static_cast<double>(integer);
-    return PALETTE[integer % PALETTE_SIZE] +
-        (PALETTE[(integer + 1) % PALETTE_SIZE] - PALETTE[integer % PALETTE_SIZE]) * decimal;
+    // The smoothing term can push `iterations` below zero, and C++ modulo keeps the sign
+    const int index = (integer % PALETTE_SIZE + PALETTE_SIZE) % PALETTE_SIZE;
+    const int next_index = (index + 1) % PALETTE_SIZE;
+    return PALETTE[index] + (PALETTE[next_index] - PALETTE[index]) * decimal;
 }
 
 Complex get_coordinate(const int row, const int col, const MandelbrotSceneSpace& mss)
 {
-    double re = mss.left + (static_cast<double>(col) / (static_cast<double>(mss.width_pixels) - 1.)) * (mss.right - mss.left);
-    double im = mss.top + (static_cast<double>(row) / (static_cast<double>(mss.height_pixels) - 1.)) * (mss.bottom - mss.top);
+    // Sample pixel centres, so that a 1-pixel-wide or 1-pixel-tall image does not divide by zero
+    double re = mss.left + ((static_cast<double>(col) + .5) / static_cast<double>(mss.width_pixels)) * (mss.right - mss.left);
+    double im = mss.top + ((static_cast<double>(row) + .5) / static_cast<double>(mss.height_pixels)) * (mss.bottom - mss.top);
     return {re, im};
 }
 
@@ -63,18 +66,28 @@ Complex get_coordinate(const int row, const int col, const MandelbrotSceneSpace&
 int main()
 {
     std::ifstream i(MANDELBROT_DATA_PATH);
+    if (!i)
+    {
+        std::cerr << "Cannot open " << MANDELBROT_DATA_PATH << '\n';
+        return -1;
+    }
 
-    json j;
-    i >> j;
     MandelbrotSceneConfig scene;
-
     try
     {
+        json j;
+        i >> j;
         scene = j;
     }
     catch (const std::exception& e)
     {
         std::cerr << "JSON parsing failed: " << e.what() << '\n';
+        return -1;
+    }
+
+    if (scene.width <= 0 || scene.aspect_ratio <= 0 || scene.zoom <= 0 || scene.max_iterations <= 0)
+    {
+        std::cerr << "Invalid scene: width, aspect_ratio, zoom and max_iterations must all be greater than 0.\n";
         return -1;
     }
 
