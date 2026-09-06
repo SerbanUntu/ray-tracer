@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 #include <chrono>
+#include <thread>
+#include <atomic>
 #include <nlohmann/json.hpp>
 #include "image.h"
 #include "util/complex.h"
@@ -10,7 +12,7 @@
 
 using namespace std::chrono;
 
-constexpr auto STDOUT_REFRESH_INTERVAL_MS = 100;
+constexpr auto STDOUT_REFRESH_INTERVAL = 100ms;
 constexpr auto PALETTE_SIZE = 16;
 constexpr Vec3 PALETTE[PALETTE_SIZE] = {
     Vec3(0.094118, 0.321569, 0.694118), Vec3(0.223529, 0.490196, 0.819608), Vec3(0.525490, 0.709804, 0.898039),
@@ -57,8 +59,10 @@ Vec3 get_mandelbrot_color(const double iterations, const int max_iterations)
 Complex get_coordinate(const int row, const int col, const MandelbrotSceneSpace& mss)
 {
     // Sample pixel centres, so that a 1-pixel-wide or 1-pixel-tall image does not divide by zero
-    double re = mss.left + ((static_cast<double>(col) + .5) / static_cast<double>(mss.width_pixels)) * (mss.right - mss.left);
-    double im = mss.top + ((static_cast<double>(row) + .5) / static_cast<double>(mss.height_pixels)) * (mss.bottom - mss.top);
+    double re = mss.left + ((static_cast<double>(col) + .5) / static_cast<double>(mss.width_pixels)) * (mss.right - mss.
+        left);
+    double im = mss.top + ((static_cast<double>(row) + .5) / static_cast<double>(mss.height_pixels)) * (mss.bottom - mss
+        .top);
     return {re, im};
 }
 
@@ -109,35 +113,52 @@ int main()
     );
 
     std::cout << "Rendering the mandelbrot set...\n";
-
-    auto start = high_resolution_clock::now();
-
-    for (int row = 0; row < HEIGHT; row++)
     {
-        auto now = high_resolution_clock::now();
-        const auto dur = duration_cast<milliseconds>(now - start);
+        std::atomic finished_rows = 0;
+        const size_t number_of_threads = std::max(1u, std::thread::hardware_concurrency());
 
-        if (row == 0 || row == HEIGHT - 1 || dur.count() > STDOUT_REFRESH_INTERVAL_MS)
-        {
-            clear_current_stdout_row();
-            display_percentage(row + 1, HEIGHT, "row");
-            start = now;
-        }
+        std::jthread progress_thread{
+            [&finished_rows, HEIGHT]
+            {
+                while (true)
+                {
+                    const int current_row = finished_rows.load();
+                    clear_current_stdout_row();
+                    display_percentage(current_row, HEIGHT, "row");
+                    if (current_row >= HEIGHT) return;
+                    std::this_thread::sleep_for(STDOUT_REFRESH_INTERVAL);
+                }
+            }
+        };
 
-        for (int col = 0; col < scene.width; col++)
+        std::vector<std::jthread> threads;
+        threads.reserve(number_of_threads);
+        for (int thread_idx = 0; thread_idx < number_of_threads; thread_idx++)
         {
-            img.draw(row, col,
-                     get_mandelbrot_color(
-                         calculate_iterations(
-                             get_coordinate(row, col, mss),
-                             scene.escape_boundary_squared,
-                             scene.max_iterations
-                         ),
-                         scene.max_iterations
-                     )
-            );
+            threads.emplace_back([&, thread_idx]
+            {
+                for (int row = thread_idx; row < HEIGHT; row += number_of_threads)
+                {
+                    for (int col = 0; col < scene.width; col++)
+                    {
+                        img.draw(row, col,
+                                 get_mandelbrot_color(
+                                     calculate_iterations(
+                                         get_coordinate(row, col, mss),
+                                         scene.escape_boundary_squared,
+                                         scene.max_iterations
+                                     ),
+                                     scene.max_iterations
+                                 )
+                        );
+                    }
+                    ++finished_rows;
+                }
+            });
         }
     }
+    clear_current_stdout_row();
+    display_percentage(HEIGHT, HEIGHT, "row");
 
     std::cout << "\nRendered!\n\nSaving to " << scene.output_path << "...";
     img.generateBmp(scene.output_path);

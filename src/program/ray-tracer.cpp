@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <chrono>
+#include <thread>
 #include <nlohmann/json.hpp>
 #include "image.h"
 #include "scene.h"
@@ -20,7 +21,7 @@
 
 using namespace std::chrono;
 
-constexpr auto STDOUT_REFRESH_INTERVAL_MS = 100;
+constexpr auto STDOUT_REFRESH_INTERVAL = 100ms;
 
 constexpr auto MIN_INTERSECTION_DISTANCE = 0.001;
 
@@ -116,10 +117,10 @@ int main()
         Vec3(0.39, 0.582, 0.9258),
         Vec3(1, 1, 1),
         Camera(
-            -1.,1.,
-            -1.,
-            1.,
-            1.,
+            -1.0, 1.0,
+            -1.0,
+            1.0,
+            1.0,
             Vec3::ZERO,
             Vec3(0, 0, -1),
             Vec3(0, 1, 0),
@@ -145,36 +146,51 @@ int main()
     );
 
     std::cout << "Rendering the scene...\n";
-
-    auto start = high_resolution_clock::now();
-
-    for (int row = 0; row < scene.camera.screen_height_pixels; row++)
     {
-        auto now = high_resolution_clock::now();
-        auto dur = duration_cast<milliseconds>(now - start);
+        std::atomic finished_rows = 0;
+        const size_t number_of_threads = std::max(1u, std::thread::hardware_concurrency());
 
-        if (row == 0 ||
-            row == scene.camera.screen_height_pixels - 1 ||
-            dur.count() > STDOUT_REFRESH_INTERVAL_MS)
-        {
-            clear_current_stdout_row();
-            display_percentage(row + 1, scene.camera.screen_height_pixels, "row");
-            start = now;
-        }
-
-        for (int col = 0; col < scene.camera.screen_width_pixels; col++)
-        {
-            auto pixel_color = Vec3(0, 0, 0);
-
-            for (int k = 0; k < scene.camera.rays_per_pixel; k++)
+        std::jthread progress_thread{
+            [&finished_rows, &scene]
             {
-                const Ray current_ray = scene.camera.compute_ray_for_pixel(Pixel(col, row));
-                pixel_color += trace(current_ray, 0, scene.camera.max_recursion_depth, scene);
+                while (true)
+                {
+                    const int current_row = finished_rows.load();
+                    clear_current_stdout_row();
+                    display_percentage(current_row, scene.camera.screen_height_pixels, "row");
+                    if (current_row >= scene.camera.screen_height_pixels) return;
+                    std::this_thread::sleep_for(STDOUT_REFRESH_INTERVAL);
+                }
             }
+        };
 
-            img.draw(row, col, pixel_color / scene.camera.rays_per_pixel);
+        std::vector<std::jthread> threads;
+        threads.reserve(number_of_threads);
+        for (int thread_idx = 0; thread_idx < number_of_threads; thread_idx++)
+        {
+            threads.emplace_back([&, thread_idx]
+            {
+                for (int row = thread_idx; row < scene.camera.screen_height_pixels; row += number_of_threads)
+                {
+                    for (int col = 0; col < scene.camera.screen_width_pixels; col++)
+                    {
+                        auto pixel_color = Vec3(0, 0, 0);
+
+                        for (int k = 0; k < scene.camera.rays_per_pixel; k++)
+                        {
+                            const Ray current_ray = scene.camera.compute_ray_for_pixel(Pixel(col, row));
+                            pixel_color += trace(current_ray, 0, scene.camera.max_recursion_depth, scene);
+                        }
+
+                        img.draw(row, col, pixel_color / scene.camera.rays_per_pixel);
+                    }
+                    ++finished_rows;
+                }
+            });
         }
     }
+    clear_current_stdout_row();
+    display_percentage(scene.camera.screen_height_pixels, scene.camera.screen_height_pixels, "row");
 
     std::cout << "\nRendered!\n\nSaving to " << scene.output_path << "...";
     img.generateBmp(scene.output_path);
