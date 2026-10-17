@@ -1,4 +1,5 @@
 #include "common/util/terminal.h"
+#include <cmath>
 
 namespace raytracer::common
 {

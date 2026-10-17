@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <chrono>
+#include <cmath>
 #include <thread>
 #include <atomic>
 #include <array>

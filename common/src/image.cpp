@@ -1,5 +1,6 @@
 #include "common/image.h"
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <cstddef>
 #include <cstdint>

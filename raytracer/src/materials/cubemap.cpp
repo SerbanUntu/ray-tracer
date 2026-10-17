@@ -1,5 +1,6 @@
 #include "raytracer/materials/cubemap.h"
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <stdexcept>
 #include <utility>

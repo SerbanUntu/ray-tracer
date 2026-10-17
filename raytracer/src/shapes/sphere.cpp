@@ -1,4 +1,5 @@
 #include "raytracer/shapes/sphere.h"
+#include <cmath>
 
 namespace raytracer::raytracer
 {
@@ -25,7 +26,7 @@ double Sphere::ray_intersection(const Ray &r) const
     const double delta = B * B - 4 * A * C;
     if (delta < 0)
         return -1.0;
-    const double sqrt_delta = sqrt(delta);
+    const double sqrt_delta = std::sqrt(delta);
     const double t1 = (-B - sqrt_delta) / (2 * A);
     const double t2 = (-B + sqrt_delta) / (2 * A);
 
