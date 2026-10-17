@@ -9,9 +9,9 @@ using json = nlohmann::json;
 TEST(MandelbrotJSONTest, PointParsing)
 {
     const json j{
-            {"x", 1.},
-            {"y", 2.},
-        };
+        {"x", 1.},
+        {"y", 2.},
+    };
     const common::Point p = j;
     EXPECT_EQ(1., p.x);
     EXPECT_EQ(2., p.y);
@@ -19,7 +19,7 @@ TEST(MandelbrotJSONTest, PointParsing)
 
 TEST(MandelbrotJSONTest, PointSerializing)
 {
-    constexpr common::Point p{1., 2.};
+    constexpr common::Point p{.x = 1., .y = 2.};
     json j = p;
     EXPECT_EQ(1., j["x"]);
     EXPECT_EQ(2., j["y"]);
@@ -28,19 +28,20 @@ TEST(MandelbrotJSONTest, PointSerializing)
 TEST(MandelbrotJSONTest, SceneConfigParsing)
 {
     const json j{
+        {
+            "center",
             {
-                "center", {
-                    {"x", 1.},
-                    {"y", 2.},
-                },
+                {"x", 1.},
+                {"y", 2.},
             },
-            {"width", 1920},
-            {"aspect_ratio", 1.6},
-            {"zoom", 100.},
-            {"max_iterations", 50},
-            {"escape_boundary_squared", 256},
-            {"output_path", "mandelbrot.bmp"},
-        };
+        },
+        {"width", 1920},
+        {"aspect_ratio", 1.6},
+        {"zoom", 100.},
+        {"max_iterations", 50},
+        {"escape_boundary_squared", 256},
+        {"output_path", "mandelbrot.bmp"},
+    };
     const MandelbrotSceneConfig msc = j;
     EXPECT_EQ(1., msc.center.x);
     EXPECT_EQ(2., msc.center.y);
@@ -54,15 +55,13 @@ TEST(MandelbrotJSONTest, SceneConfigParsing)
 
 TEST(MandelbrotJSONTest, SceneConfigSerializing)
 {
-    const MandelbrotSceneConfig msc{
-        common::Point(1., 2.),
-        1920,
-        1.6,
-        100.,
-        50,
-        256,
-        "mandelbrot.bmp"
-    };
+    const MandelbrotSceneConfig msc{.center = common::Point(1., 2.),
+                                    .width = 1920,
+                                    .aspect_ratio = 1.6,
+                                    .zoom = 100.,
+                                    .max_iterations = 50,
+                                    .escape_boundary_squared = 256,
+                                    .output_path = "mandelbrot.bmp"};
     json j = msc;
     EXPECT_EQ(1., j["center"]["x"]);
     EXPECT_EQ(2., j["center"]["y"]);

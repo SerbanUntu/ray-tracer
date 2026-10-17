@@ -3,7 +3,7 @@
 
 namespace raytracer::raytracer
 {
-common::Vec3 Material::reflect(const common::Vec3& dir_in, const common::Vec3& normal)
+common::Vec3 Material::reflect(const common::Vec3 &dir_in, const common::Vec3 &normal)
 {
     const common::Vec3 v = dir_in.to_normalized();
     const common::Vec3 n = normal.to_normalized();
@@ -11,7 +11,7 @@ common::Vec3 Material::reflect(const common::Vec3& dir_in, const common::Vec3& n
     return (v - n * 2 * (v * n)).to_normalized();
 }
 
-common::Vec3 Material::refract(const common::Vec3& dir_in, const common::Vec3& normal, const double refractive_index)
+common::Vec3 Material::refract(const common::Vec3 &dir_in, const common::Vec3 &normal, const double refractive_index)
 {
     const common::Vec3 v = dir_in.to_normalized();
     const common::Vec3 n = normal.to_normalized();

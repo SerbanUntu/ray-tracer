@@ -7,7 +7,7 @@ Dielectric::Dielectric(const double eta) : refractive_index(eta)
 {
 }
 
-Ray Dielectric::get_scattered(const Ray& ray_in, const common::Vec3& intersection, const common::Vec3& normal) const
+Ray Dielectric::get_scattered(const Ray &ray_in, const common::Vec3 &intersection, const common::Vec3 &normal) const
 {
     const double cosine = ray_in.direction.to_normalized() * normal.to_normalized();
 
@@ -36,7 +36,8 @@ Ray Dielectric::get_scattered(const Ray& ray_in, const common::Vec3& intersectio
     return Ray(intersection, refract(ray_in.direction, normal, ratio));
 }
 
-common::Vec3 Dielectric::get_color(const Ray& ray_in, const common::Vec3& intersection, const common::Vec3& normal) const
+common::Vec3 Dielectric::get_color(const Ray &ray_in, const common::Vec3 &intersection,
+                                   const common::Vec3 &normal) const
 {
     return {1, 1, 1};
 }

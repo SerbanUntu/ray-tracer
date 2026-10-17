@@ -6,15 +6,19 @@ Floor::Floor(std::unique_ptr<const Material> _mat, const double _y) : Object(std
 {
 }
 
-double Floor::get_y() const { return y; }
-
-double Floor::ray_intersection(const Ray& r) const
+double Floor::get_y() const
 {
-    if (r.direction.y == 0) return -1.0;
+    return y;
+}
+
+double Floor::ray_intersection(const Ray &r) const
+{
+    if (r.direction.y == 0)
+        return -1.0;
     return (y - r.origin.y) / r.direction.y;
 }
 
-common::Vec3 Floor::get_normal(const common::Vec3& point) const
+common::Vec3 Floor::get_normal(const common::Vec3 &point) const
 {
     return {0, 1, 0};
 }

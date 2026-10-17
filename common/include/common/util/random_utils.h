@@ -5,5 +5,5 @@
 namespace raytracer::common
 {
 Vec3 random_unit();
-std::mt19937& get_generator();
+std::mt19937 &get_generator();
 } // namespace raytracer::common

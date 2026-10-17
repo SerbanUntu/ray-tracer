@@ -14,5 +14,7 @@ CMakeUserPresets.json
 out/
 .vs/
 .idea/
+docs/
 cmake-build-debug/
+cmake-build-release/
 TODOS.md
