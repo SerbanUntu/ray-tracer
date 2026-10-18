@@ -147,7 +147,7 @@ TEST(RayTracerRenderTest, SameSceneWithVaryingThreadCount)
     std::vector<common::Image> images;
     for (const auto thread_count : {1, 2, 4, 8})
     {
-        images.emplace_back(renderer.render(make_scene(make_default_objects()), common::nullout, thread_count));
+        images.emplace_back(renderer.render(make_scene(make_default_objects()), common::get_nullout(), thread_count));
         if (thread_count > 1)
         {
             EXPECT_NEAR(0.0, common::diff_images(images[images.size() - 1], images[images.size() - 2]), TOLERANCE)

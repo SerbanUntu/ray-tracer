@@ -49,8 +49,9 @@ common::Vec3 Renderer::get_mandelbrot_color(const double iterations, const int m
     const int integer = static_cast<int>(std::floor(iterations));
     const double decimal = iterations - static_cast<double>(integer);
     // The smoothing term can push `iterations` below zero, and C++ modulo keeps the sign
-    const int index = ((integer % palette.size()) + palette.size()) % palette.size();
-    const int next_index = (index + 1) % palette.size();
+    const int palette_size = static_cast<int>(palette.size());
+    const int index = ((integer % palette_size) + palette_size) % palette_size;
+    const int next_index = (index + 1) % palette_size;
     return palette[index] + (palette[next_index] - palette[index]) * decimal;
 }
 

@@ -15,7 +15,7 @@ class Renderer
     common::Vec3 trace(const Ray &r, int depth, int max_depth, const RayTracerSceneConfig &scene);
 
   public:
-    common::Image render(const RayTracerSceneConfig &scene, std::ostream &out = common::nullout,
+    common::Image render(const RayTracerSceneConfig &scene, std::ostream &out = common::get_nullout(),
                          int number_of_threads = static_cast<int>(std::max(1U, std::thread::hardware_concurrency())));
 };
 } // namespace raytracer::raytracer

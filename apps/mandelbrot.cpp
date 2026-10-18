@@ -42,8 +42,7 @@ int main()
         return -1;
     }
 
-    Renderer renderer;
-    const auto img = renderer.render(scene, std::cout);
+    const auto img = Renderer::render(scene, std::cout);
     std::cout << "\nRendered!\n\nSaving to " << scene.output_path << "...";
     img.generateBmp(scene.output_path);
     std::cout << "\nSaved!\n";
