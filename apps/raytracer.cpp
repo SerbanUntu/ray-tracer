@@ -40,15 +40,7 @@ int main()
 {
     std::vector<std::unique_ptr<Object>> objects;
     objects.emplace_back(std::make_unique<Sphere>(std::make_unique<const Lambertian>(common::Vec3(1, 1, 0)),
-                                                  common::Vec3(6, -5, -20), 6));
-    objects.emplace_back(std::make_unique<Sphere>(std::make_unique<const Metal>(common::Vec3(0.4, 0.5, 0.6), 0.1),
-                                                  common::Vec3(-6, -5, -20), 6));
-    objects.emplace_back(
-        std::make_unique<Sphere>(std::make_unique<const LambertianTexture>(Cubemap(
-                                     common::Image(common::Vec3(1, 0, 0)), common::Image(common::Vec3(0, 1, 0)),
-                                     common::Image(common::Vec3(0, 0, 1)), common::Image(common::Vec3(1, 1, 0)),
-                                     common::Image(common::Vec3(0, 1, 1)), common::Image(common::Vec3(1, 0, 1)))),
-                                 common::Vec3(0, 10, -120), 20));
+                                                  common::Vec3(0, -5, -20), 6));
     objects.emplace_back(std::make_unique<Floor>(std::make_unique<const Metal>(common::Vec3(0.4, 0.4, 0.8), 0.6), -11));
 
     // Scene config

@@ -25,7 +25,7 @@ common::Vec3 Renderer::trace(const Ray &r, const int depth, const int max_depth,
         return common::Vec3::ZERO;
 
     double min_depth = std::numeric_limits<double>::max();
-    common::Vec3 top_color = depth == 0 ? scene.background_color : scene.sky_color;
+    const Object *nearest = nullptr;
 
     for (const auto &oPtr : scene.objects)
     {
@@ -33,11 +33,16 @@ common::Vec3 Renderer::trace(const Ray &r, const int depth, const int max_depth,
         if (const double t = o.ray_intersection(r); t < min_depth && t > MIN_INTERSECTION_DISTANCE)
         {
             min_depth = t;
-            top_color = shade(o, r.origin + r.direction * t, r, depth, max_depth, scene);
+            nearest = &o;
         }
     }
 
-    return top_color;
+    if (nearest == nullptr)
+    {
+        return depth == 0 ? scene.background_color : scene.sky_color;
+    }
+
+    return shade(*nearest, r.origin + r.direction * min_depth, r, depth, max_depth, scene);
 }
 
 common::Image Renderer::render(const RayTracerSceneConfig &scene, std::ostream &out, const int number_of_threads)

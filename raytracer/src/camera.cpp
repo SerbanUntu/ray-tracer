@@ -5,7 +5,7 @@
 
 namespace raytracer::raytracer
 {
-static std::uniform_real_distribution offset_dist(-.5, .5);
+static thread_local std::uniform_real_distribution offset_dist(-.5, .5);
 
 Camera::Camera(const double _screen_left_coord, const double _screen_right_coord, const double _screen_bottom_coord,
                const double _screen_top_coord, const double _focal_length, const common::Vec3 &_origin,
@@ -22,7 +22,6 @@ Camera::Camera(const double _screen_left_coord, const double _screen_right_coord
 
 Ray Camera::compute_ray_for_pixel(const Pixel p) const
 {
-
     const common::Vec3 forward = direction.to_normalized();
     const common::Vec3 right = forward.cross(world_up).to_normalized();
     const common::Vec3 up = right.cross(forward);
@@ -82,7 +81,7 @@ CameraBuilder &CameraBuilder::with_direction(const common::Vec3 &direction) &
     return *this;
 }
 
-CameraBuilder &CameraBuilder::with_world_up(common::Vec3 direction) &
+CameraBuilder &CameraBuilder::with_world_up(const common::Vec3 &direction) &
 {
     camera.world_up = direction;
     return *this;

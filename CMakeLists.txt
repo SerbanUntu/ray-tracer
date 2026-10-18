@@ -43,3 +43,4 @@ add_subdirectory(apps)
 
 add_subdirectory(common/test)
 add_subdirectory(mandelbrot/test)
+add_subdirectory(raytracer/test)
