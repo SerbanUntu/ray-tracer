@@ -58,7 +58,7 @@ class CameraBuilder
     CameraBuilder &with_focal_length(double focal_length) &;
     CameraBuilder &with_origin(const common::Vec3 &origin) &;
     CameraBuilder &with_direction(const common::Vec3 &direction) &;
-    CameraBuilder &with_world_up(common::Vec3 direction) &;
+    CameraBuilder &with_world_up(const common::Vec3 &direction) &;
     CameraBuilder &with_virtual_screen_boundaries(double left, double top, double right, double bottom) &;
     CameraBuilder &with_view_type(ViewType view_type) &;
     CameraBuilder &with_color_channels(int color_channels) &;
