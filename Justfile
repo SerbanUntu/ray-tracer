@@ -13,22 +13,22 @@ lint:
 lint-fix:
     find apps common mandelbrot raytracer -type f -name '*.cpp' -print0 | xargs -0 --no-run-if-empty clang-tidy -fix -p cmake-build-release/build/Release
 
-build:
-    cmake --preset conan-release
+build opt="3" fast_math="OFF":
+    cmake --preset conan-release -DRAYTRACER_OPT_LEVEL={{opt}} -DRAYTRACER_FAST_MATH={{fast_math}}
     cmake --build --preset conan-release
 
-test: build
+test opt="3" fast_math="OFF": (build opt fast_math)
     ctest --test-dir cmake-build-release/build/Release --output-on-failure
 
-check:
+check opt="3" fast_math="OFF":
     just check-format
     just install
-    just build
+    just build {{opt}} {{fast_math}}
     just lint
-    just test
+    just test {{opt}} {{fast_math}}
 
 check-pipeline:
-    act -j build -P ubuntu-latest=catthehacker/ubuntu:full-latest
+    act -j test -P ubuntu-latest=catthehacker/ubuntu:full-latest
 
 fix:
     just format
