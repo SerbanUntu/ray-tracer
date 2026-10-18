@@ -3,6 +3,8 @@
 
 namespace raytracer::common
 {
-void clear_current_stdout_row();
-void display_percentage(int current, int total, const std::string &qty, int width = 20);
+inline std::ostream nullout(nullptr);
+
+void clear_current_stdout_row(std::ostream &out);
+void display_percentage(std::ostream &out, int current, int total, const std::string &qty, int width = 20);
 } // namespace raytracer::common
