@@ -13,17 +13,35 @@ class Image
 
     void validate_dimensions(int x, int y) const;
 
-public:
+  public:
     Image(int _width, int _height, int _channels, bool _is_grayscale);
-    explicit Image(const Vec3& color);
-    void draw(int x, int y, const Vec3& color);
-    void add_color(int x, int y, const Vec3& color);
-    void generateBmp(const std::string& file_name) const;
-    [[nodiscard]] int get_width() const { return width; }
-    [[nodiscard]] int get_height() const { return height; }
-    [[nodiscard]] int get_color_channels() const { return color_channels; }
-    [[nodiscard]] bool get_is_grayscale() const { return is_grayscale; }
-    [[nodiscard]] const std::vector<Vec3>& get_data() const { return data; }
-    [[nodiscard]] Vec3 get_color(const int x, const int y) const { return data[x * width + y]; }
+    explicit Image(const Vec3 &color);
+    void draw(int x, int y, const Vec3 &color);
+    void add_color(int x, int y, const Vec3 &color);
+    void generateBmp(const std::string &file_name) const;
+    [[nodiscard]] int get_width() const
+    {
+        return width;
+    }
+    [[nodiscard]] int get_height() const
+    {
+        return height;
+    }
+    [[nodiscard]] int get_color_channels() const
+    {
+        return color_channels;
+    }
+    [[nodiscard]] bool get_is_grayscale() const
+    {
+        return is_grayscale;
+    }
+    [[nodiscard]] const std::vector<Vec3> &get_data() const
+    {
+        return data;
+    }
+    [[nodiscard]] Vec3 get_color(const int x, const int y) const
+    {
+        return data[x * width + y];
+    }
 };
 } // namespace raytracer::common

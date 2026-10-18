@@ -1,0 +1,17 @@
+---
+Checks: >
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  performance-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  -modernize-use-std-print,
+  readability-*,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -readability-braces-around-statements,
+  -readability-function-cognitive-complexity,
+  -readability-math-missing-parentheses,
+WarningsAsErrors: '*'
+HeaderFilterRegex: '[/\\]include[/\\]' # Only report issues in this project's own sources and headers.
+FormatStyle: file

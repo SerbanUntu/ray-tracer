@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <cmath>
 
 namespace raytracer::common
 {
@@ -34,33 +35,29 @@ struct Vec3
         return std::sqrt(x * x + y * y + z * z);
     }
 
-    [[nodiscard]] constexpr Vec3 cross(Vec3 const& other) const
+    [[nodiscard]] constexpr Vec3 cross(Vec3 const &other) const
     {
-        return {
-            y * other.z - z * other.y,
-            z * other.x - x * other.z,
-            x * other.y - y * other.x
-        };
+        return {y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x};
     }
 
-    constexpr bool operator==(Vec3 const& other) const
+    constexpr bool operator==(Vec3 const &other) const
     {
         return x == other.x && y == other.y && z == other.z;
     }
 
-    constexpr Vec3 operator+(Vec3 const& other) const
+    constexpr Vec3 operator+(Vec3 const &other) const
     {
         return {x + other.x, y + other.y, z + other.z};
     }
 
-    constexpr void operator+=(Vec3 const& other)
+    constexpr void operator+=(Vec3 const &other)
     {
         x += other.x;
         y += other.y;
         z += other.z;
     }
 
-    constexpr Vec3 operator-(Vec3 const& other) const
+    constexpr Vec3 operator-(Vec3 const &other) const
     {
         return {x - other.x, y - other.y, z - other.z};
     }
@@ -70,7 +67,7 @@ struct Vec3
         return {-x, -y, -z};
     }
 
-    constexpr double operator*(Vec3 const& other) const
+    constexpr double operator*(Vec3 const &other) const
     {
         return x * other.x + y * other.y + z * other.z;
     }
@@ -86,7 +83,7 @@ struct Vec3
     }
 };
 
-inline std::ostream& operator<<(std::ostream& os, Vec3 const& v)
+inline std::ostream &operator<<(std::ostream &os, Vec3 const &v)
 {
     return os << "Vec3(" << v.x << ", " << v.y << ", " << v.z << ")";
 }

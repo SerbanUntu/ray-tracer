@@ -14,8 +14,9 @@ The ray tracer uses a recursive ray casting algorithm with configurable depth li
 
 - CMake 4.2 or higher
 - C++23 compatible compiler
-- Google Test v1.17.0 (automatically downloaded via CMake)
-- nlohmann/json v3.12.0 (automatically downloaded via CMake)
+- [Conan](https://conan.io/) 2.x
+- Google Test v1.17.0 (installed via Conan)
+- nlohmann/json v3.12.0 (installed via Conan)
 
 ### Project Structure
 
@@ -70,7 +71,8 @@ ray-tracer/
 │   ├── raytracer.bmp
 │   └── mandelbrot.bmp
 ├── CMakeLists.txt                   # Top-level build configuration
-└── CMakePresets.json                # Configure/build presets
+├── conanfile.txt                    # Conan dependencies
+└── Justfile                         # Build, lint, test and CI recipes
 ```
 
 #### Structure Descriptions
@@ -90,22 +92,25 @@ The material system uses polymorphism to handle different surface interactions, 
 
 ### Building the Project
 
-The project uses CMake presets (Ninja generator). Configure and build a release preset:
+Dependencies are installed with Conan, which also generates the `conan-release` CMake preset.
+On Windows, run these from a Visual Studio developer shell:
 
 ```bash
-cmake --preset x64-release
-cmake --build out/build/x64-release
+conan profile detect --force
+conan install . --build=missing --output-folder=cmake-build-release
+cmake --preset conan-release
+cmake --build --preset conan-release
 ```
 
-Available configure presets: `x64-debug`, `x64-release`, `x86-debug`, `x86-release`. Build
-output is placed under `out/build/<preset>/`.
+Build output is placed under `cmake-build-release/build/Release/`. `just check` runs the same
+format, build, lint and test steps as the CI workflow.
 
 ### Running the Ray Tracer
 
 The ray tracer executable generates a scene with three spheres and a floor:
 
 ```bash
-./out/build/x64-release/apps/raytracer.exe
+./cmake-build-release/build/Release/apps/raytracer.exe
 ```
 
 This will output a BMP file named `raytracer.bmp` in the build directory. The scene includes:
@@ -119,7 +124,7 @@ This will output a BMP file named `raytracer.bmp` in the build directory. The sc
 The Mandelbrot set generator creates mathematical visualizations:
 
 ```bash
-./out/build/x64-release/apps/mandelbrot.exe
+./cmake-build-release/build/Release/apps/mandelbrot.exe
 ```
 
 This generates `mandelbrot.bmp` with a high-resolution view of the Mandelbrot set using a custom
@@ -162,12 +167,12 @@ This generates `mandelbrot.bmp` with a high-resolution view of the Mandelbrot se
 Tests are built alongside the project and registered with CTest. Run the full suite with:
 
 ```bash
-ctest --test-dir out/build/x64-release
+ctest --test-dir cmake-build-release/build/Release --output-on-failure
 ```
 
 Or run an individual test executable directly, e.g.:
 
 ```bash
-./out/build/x64-release/common/test/raytracer-common-test.exe
-./out/build/x64-release/mandelbrot/test/raytracer-mandelbrot-test.exe
+./cmake-build-release/build/Release/common/test/raytracer-common-test.exe
+./cmake-build-release/build/Release/mandelbrot/test/raytracer-mandelbrot-test.exe
 ```

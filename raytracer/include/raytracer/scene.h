@@ -26,5 +26,3 @@ struct RayTracerSceneConfig
     std::string output_path;
 };
 } // namespace raytracer::raytracer
-
-

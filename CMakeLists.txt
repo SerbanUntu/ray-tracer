@@ -1,21 +1,37 @@
 cmake_minimum_required(VERSION 4.2)
 
-project("raytracer")
+project(raytracer)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include(FetchContent)
+option(RAYTRACER_FAST_MATH "Compile with -ffast-math" OFF)
+if (RAYTRACER_FAST_MATH)
+    if (MSVC)
+        add_compile_options(/fp:fast)
+    else ()
+        add_compile_options(-ffast-math)
+    endif ()
+endif ()
 
-FetchContent_Declare(json
-    URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
-)
-FetchContent_Declare(googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        v1.17.0
-)
-FetchContent_MakeAvailable(json googletest)
+set(RAYTRACER_OPT_LEVEL "" CACHE STRING "Release optimization level (0, 1, 2 or 3)")
+set_property(CACHE RAYTRACER_OPT_LEVEL PROPERTY STRINGS "" 0 1 2 3)
+if (NOT RAYTRACER_OPT_LEVEL STREQUAL "")
+    if (NOT RAYTRACER_OPT_LEVEL MATCHES "^[0-3]$")
+        message(FATAL_ERROR "RAYTRACER_OPT_LEVEL must be 0, 1, 2 or 3, got '${RAYTRACER_OPT_LEVEL}'")
+    endif ()
+    if (MSVC)
+        set(_msvc_opt_flags "/Od" "/O1" "/O2 /Ob2" "/O2 /Ob2")
+        list(GET _msvc_opt_flags ${RAYTRACER_OPT_LEVEL} _opt_flag)
+        set(CMAKE_CXX_FLAGS_RELEASE "${_opt_flag} /DNDEBUG")
+    else ()
+        set(CMAKE_CXX_FLAGS_RELEASE "-O${RAYTRACER_OPT_LEVEL} -DNDEBUG")
+    endif ()
+endif ()
+
+find_package(GTest REQUIRED)         # GTest::gtest_main
+find_package(nlohmann_json REQUIRED) # nlohmann_json::nlohmann_json
 
 enable_testing()
 include(GoogleTest)

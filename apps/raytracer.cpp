@@ -8,6 +8,7 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 #include "common/image.h"
+#include "common/util/error_handling.h"
 #include "raytracer/scene.h"
 #include "raytracer/shapes/floor.h"
 #include "raytracer/shapes/sphere.h"
@@ -37,24 +38,23 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Camera, screen_left_coord, screen_right_coord
                                    view_type, color_channels, rays_per_pixel, max_recursion_depth)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(RayTracerSceneConfig, background_color, sky_color, camera, objects,
                                    is_shading_thresholded, thresholded_shading_degrees, is_grayscale, output_path)
-NLOHMANN_JSON_SERIALIZE_ENUM(ViewType, {
-                             {ViewType::ORTHOGRAPHIC, "orthographic"},
-                             {ViewType::PERSPECTIVE, "perspective"}
-                             })
+NLOHMANN_JSON_SERIALIZE_ENUM(ViewType,
+                             {{ViewType::ORTHOGRAPHIC, "orthographic"}, {ViewType::PERSPECTIVE, "perspective"}})
 
-static common::Vec3 shade(const Object& o, const common::Vec3& intersection, const Ray& r, int depth, int max_depth,
-                          const RayTracerSceneConfig& scene);
+static common::Vec3 shade(const Object &o, const common::Vec3 &intersection, const Ray &r, int depth, int max_depth,
+                          const RayTracerSceneConfig &scene);
 
-static common::Vec3 trace(const Ray& r, const int depth, const int max_depth, const RayTracerSceneConfig& scene)
+static common::Vec3 trace(const Ray &r, const int depth, const int max_depth, const RayTracerSceneConfig &scene)
 {
-    if (depth > max_depth) return common::Vec3::ZERO;
+    if (depth > max_depth)
+        return common::Vec3::ZERO;
 
     double min_depth = std::numeric_limits<double>::max();
     common::Vec3 top_color = depth == 0 ? scene.background_color : scene.sky_color;
 
-    for (const auto& oPtr : scene.objects)
+    for (const auto &oPtr : scene.objects)
     {
-        const Object& o = *oPtr;
+        const Object &o = *oPtr;
         const double t = o.ray_intersection(r);
         if (t < min_depth && t > MIN_INTERSECTION_DISTANCE)
         {
@@ -66,116 +66,64 @@ static common::Vec3 trace(const Ray& r, const int depth, const int max_depth, co
     return top_color;
 }
 
-static common::Vec3 shade(const Object& o, const common::Vec3& intersection, const Ray& r, const int depth,
-                          const int max_depth, const RayTracerSceneConfig& scene)
+static common::Vec3 shade(const Object &o, const common::Vec3 &intersection, const Ray &r, const int depth,
+                          const int max_depth, const RayTracerSceneConfig &scene)
 {
-    const Material* mat = o.get_material();
+    const Material *mat = o.get_material();
 
     const common::Vec3 normal = o.get_normal(intersection);
     const common::Vec3 rec = trace(mat->get_scattered(r, intersection, normal), depth + 1, max_depth, scene);
     const common::Vec3 col = mat->get_color(r, intersection, normal);
 
-    return { rec.x * col.x, rec.y * col.y, rec.z * col.z };
+    return {rec.x * col.x, rec.y * col.y, rec.z * col.z};
 }
 
 int main()
 {
     std::vector<std::unique_ptr<Object>> objects;
+    objects.emplace_back(std::make_unique<Sphere>(std::make_unique<const Lambertian>(common::Vec3(1, 1, 0)),
+                                                  common::Vec3(6, -5, -20), 6));
+    objects.emplace_back(std::make_unique<Sphere>(std::make_unique<const Metal>(common::Vec3(0.4, 0.5, 0.6), 0.1),
+                                                  common::Vec3(-6, -5, -20), 6));
     objects.emplace_back(
-        std::make_unique<Sphere>(
-            std::make_unique<const Lambertian>(common::Vec3(1, 1, 0)),
-            common::Vec3(6, -5, -20),
-            6
-        )
-    );
-    objects.emplace_back(
-        std::make_unique<Sphere>(
-            std::make_unique<const Metal>(common::Vec3(0.4, 0.5, 0.6), 0.1),
-            common::Vec3(-6, -5, -20),
-            6
-        )
-    );
-    objects.emplace_back(
-        std::make_unique<Sphere>(
-            std::make_unique<const LambertianTexture>(
-                Cubemap(
-                    common::Image(common::Vec3(1, 0, 0)),
-                    common::Image(common::Vec3(0, 1, 0)),
-                    common::Image(common::Vec3(0, 0, 1)),
-                    common::Image(common::Vec3(1, 1, 0)),
-                    common::Image(common::Vec3(0, 1, 1)),
-                    common::Image(common::Vec3(1, 0, 1))
-                )
-            ),
-            common::Vec3(0, 10, -120),
-            20
-        )
-    );
-    objects.emplace_back(
-        std::make_unique<Floor>(
-            std::make_unique<const Metal>(common::Vec3(0.4, 0.4, 0.8), 0.6),
-            -11
-        )
-    );
+        std::make_unique<Sphere>(std::make_unique<const LambertianTexture>(Cubemap(
+                                     common::Image(common::Vec3(1, 0, 0)), common::Image(common::Vec3(0, 1, 0)),
+                                     common::Image(common::Vec3(0, 0, 1)), common::Image(common::Vec3(1, 1, 0)),
+                                     common::Image(common::Vec3(0, 1, 1)), common::Image(common::Vec3(1, 0, 1)))),
+                                 common::Vec3(0, 10, -120), 20));
+    objects.emplace_back(std::make_unique<Floor>(std::make_unique<const Metal>(common::Vec3(0.4, 0.4, 0.8), 0.6), -11));
 
     // Scene config
-    const RayTracerSceneConfig scene(
-        common::Vec3(0.39, 0.582, 0.9258),
-        common::Vec3(1, 1, 1),
-        Camera(
-            -1.0, 1.0,
-            -1.0,
-            1.0,
-            1.0,
-            common::Vec3::ZERO,
-            common::Vec3(0, 0, -1),
-            common::Vec3(0, 1, 0),
-            800,
-            800,
-            ViewType::PERSPECTIVE,
-            256,
-            4,
-            50
-        ),
-        std::move(objects),
-        false,
-        4.0,
-        false,
-        "raytracer.bmp"
-    );
+    const RayTracerSceneConfig scene(common::Vec3(0.39, 0.582, 0.9258), common::Vec3(1, 1, 1),
+                                     Camera(-1.0, 1.0, -1.0, 1.0, 1.0, common::Vec3::ZERO, common::Vec3(0, 0, -1),
+                                            common::Vec3(0, 1, 0), 800, 800, ViewType::PERSPECTIVE, 256, 4, 50),
+                                     std::move(objects), false, 4.0, false, "raytracer.bmp");
 
-    auto img = common::Image(
-        scene.camera.screen_width_pixels,
-        scene.camera.screen_height_pixels,
-        scene.camera.color_channels,
-        scene.is_grayscale
-    );
+    auto img = common::Image(scene.camera.screen_width_pixels, scene.camera.screen_height_pixels,
+                             scene.camera.color_channels, scene.is_grayscale);
 
     std::cout << "Rendering the scene...\n";
     {
         std::atomic finished_rows = 0;
-        const int number_of_threads = static_cast<int>(std::max(1u, std::thread::hardware_concurrency()));
+        const int number_of_threads = static_cast<int>(std::max(1U, std::thread::hardware_concurrency()));
 
-        std::jthread progress_thread{
-            [&finished_rows, &scene]
+        std::jthread progress_thread{[&finished_rows, &scene] {
+            while (true)
             {
-                while (true)
-                {
-                    const int current_row = finished_rows.load();
-                    common::clear_current_stdout_row();
-                    common::display_percentage(current_row, scene.camera.screen_height_pixels, "row");
-                    if (current_row >= scene.camera.screen_height_pixels) return;
-                    std::this_thread::sleep_for(STDOUT_REFRESH_INTERVAL);
-                }
+                const int current_row = finished_rows.load();
+                common::clear_current_stdout_row();
+                common::display_percentage(current_row, scene.camera.screen_height_pixels, "row");
+                if (current_row >= scene.camera.screen_height_pixels)
+                    return;
+                std::this_thread::sleep_for(STDOUT_REFRESH_INTERVAL);
             }
-        };
+        }};
 
         std::vector<std::jthread> threads;
         threads.reserve(number_of_threads);
         for (int thread_idx = 0; thread_idx < number_of_threads; thread_idx++)
         {
-            threads.emplace_back([&, thread_idx]
-            {
+            threads.emplace_back([&, thread_idx] {
                 for (int row = thread_idx; row < scene.camera.screen_height_pixels; row += number_of_threads)
                 {
                     for (int col = 0; col < scene.camera.screen_width_pixels; col++)
@@ -207,5 +155,18 @@ int main()
 
 int main()
 {
-    return raytracer::raytracer::main();
+    try
+    {
+        return raytracer::raytracer::main();
+    }
+    catch (const std::exception &err)
+    {
+        raytracer::common::reportException(err);
+        return 1;
+    }
+    catch (...)
+    {
+        raytracer::common::reportUnknownException();
+        return 1;
+    }
 }
