@@ -10,6 +10,7 @@ FILE_PATTERNS          = *.cpp *.h *.hpp
 RECURSIVE              = YES
 EXTRACT_ALL            = YES
 EXTRACT_STATIC         = YES
+INHERIT_DOCS           = YES
 
 GENERATE_HTML          = YES
 GENERATE_LATEX         = NO

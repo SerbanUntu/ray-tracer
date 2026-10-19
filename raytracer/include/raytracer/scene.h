@@ -10,6 +10,9 @@ namespace raytracer::raytracer
 {
 using json = nlohmann::json;
 
+/**
+ * Settings for rendering a 3D scene using the ray tracer.
+ */
 struct RayTracerSceneConfig
 {
     common::Vec3 background_color;

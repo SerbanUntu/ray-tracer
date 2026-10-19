@@ -4,6 +4,9 @@
 
 namespace raytracer::common
 {
+/**
+ * A 3D vector, used for directions, positions in 3D space, and colors
+ */
 struct Vec3
 {
     double x;
@@ -14,8 +17,15 @@ struct Vec3
     {
     }
 
+    /**
+     * The zero vector.
+     */
     static const Vec3 ZERO;
 
+    /**
+     * Normalizes the current vector in-place by dividing its dimension by its length,
+     * making the length one while keeping the ratios between the dimensions.
+     */
     void normalize()
     {
         const double denominator = length();
@@ -24,17 +34,33 @@ struct Vec3
         z /= denominator;
     }
 
+    /**
+     * Returns a normalized instance of the current vector, without modifying it.
+     *
+     * @return A normalized instance of the current vector.
+     */
     [[nodiscard]] Vec3 to_normalized() const
     {
         const double denominator = length();
         return {x / denominator, y / denominator, z / denominator};
     }
 
+    /**
+     * Returns the length of the vector, which is equal to the square root of its squared dimensions.
+     *
+     * @return The length of the vector, which is equal to the square root of its squared dimensions.
+     */
     [[nodiscard]] double length() const
     {
         return std::sqrt(x * x + y * y + z * z);
     }
 
+    /**
+     * Returns the cross product between this vector and the vector passed as a parameter.
+     *
+     * @param other The vector with which to compute the cross product.
+     * @return The cross product between this vector and the vector passed as a parameter.
+     */
     [[nodiscard]] constexpr Vec3 cross(Vec3 const &other) const
     {
         return {y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x};

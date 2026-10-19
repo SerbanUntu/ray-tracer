@@ -6,7 +6,7 @@ namespace raytracer::common
 static constexpr auto ANSI_ESCAPE = '\33';
 static constexpr auto ANSI_CLEAR_ROW = "[2K";
 
-void clear_current_stdout_row(std::ostream &out)
+void clear_current_row(std::ostream &out)
 {
     out << ANSI_ESCAPE << ANSI_CLEAR_ROW << '\r';
 }
