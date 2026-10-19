@@ -138,12 +138,6 @@ Cubemap::Cubemap(common::Image _top, common::Image _left, common::Image _front, 
 {
 }
 
-/**
- Calculates the texture color at a point on the sphere, given the normal.
-
- @param normal The normal to the sphere surface at that point
- @return A vector representing the color at that point
- */
 common::Vec3 Cubemap::get_color_at_point(const common::Vec3 &normal) const
 {
     const common::Vec3 direction = normal.to_normalized();

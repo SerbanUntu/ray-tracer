@@ -15,6 +15,14 @@ class Renderer
     common::Vec3 trace(const Ray &r, int depth, int max_depth, const RayTracerSceneConfig &scene);
 
   public:
+    /**
+     * Render the 3D scene to an image given a configuration.
+     *
+     * @param scene The object containing the details of the scene (objects, etc.).
+     * @param out The std::ostream to which to write rendering progress updates (defaults to none).
+     * @param number_of_threads The number of parallel threads used for rendering.
+     * @return The rendered image.
+     */
     common::Image render(const RayTracerSceneConfig &scene, std::ostream &out = common::get_nullout(),
                          int number_of_threads = static_cast<int>(std::max(1U, std::thread::hardware_concurrency())));
 };

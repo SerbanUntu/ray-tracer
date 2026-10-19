@@ -6,6 +6,9 @@ namespace raytracer::mandelbrot
 {
 using json = nlohmann::json;
 
+/**
+ * Settings for rendering a Mandelbrot set scene.
+ */
 struct MandelbrotSceneConfig
 {
     common::Point center;
@@ -20,6 +23,9 @@ struct MandelbrotSceneConfig
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MandelbrotSceneConfig, center, width, aspect_ratio, zoom, max_iterations,
                                    escape_boundary_squared, output_path);
 
+/**
+ * Dimensions of a Mandelbrot set scene.
+ */
 struct MandelbrotSceneSpace
 {
     double left;

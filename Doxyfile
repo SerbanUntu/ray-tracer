@@ -5,11 +5,15 @@ PROJECT_NAME           = "raytracer"
 PROJECT_BRIEF          = "Parallel Ray Tracer written from scratch (no graphics API)."
 OUTPUT_DIRECTORY       = docs
 
-INPUT                  = apps common mandelbrot raytracer
-FILE_PATTERNS          = *.cpp *.h *.hpp
+INPUT                  = README.md METAMORPHIC_TESTING.md apps common mandelbrot raytracer
+FILE_PATTERNS          = *.cpp *.h *.hpp *.md
+EXCLUDE_PATTERNS       = */test/*
+USE_MDFILE_AS_MAINPAGE = README.md
+IMAGE_PATH             = assets
 RECURSIVE              = YES
 EXTRACT_ALL            = YES
-EXTRACT_STATIC         = YES
+EXTRACT_STATIC         = NO
+INHERIT_DOCS           = YES
 
 GENERATE_HTML          = YES
 GENERATE_LATEX         = NO

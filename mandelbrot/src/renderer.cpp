@@ -84,7 +84,7 @@ common::Image Renderer::render(const MandelbrotSceneConfig &scene, std::ostream 
             while (true)
             {
                 const int current_row = finished_rows.load();
-                common::clear_current_stdout_row(out);
+                common::clear_current_row(out);
                 common::display_percentage(out, current_row, HEIGHT, "row");
                 if (current_row >= HEIGHT)
                     return;
@@ -112,7 +112,7 @@ common::Image Renderer::render(const MandelbrotSceneConfig &scene, std::ostream 
             });
         }
     }
-    common::clear_current_stdout_row(out);
+    common::clear_current_row(out);
     common::display_percentage(out, HEIGHT, HEIGHT, "row");
     return img;
 }

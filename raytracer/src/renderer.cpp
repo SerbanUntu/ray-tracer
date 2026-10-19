@@ -48,8 +48,8 @@ common::Vec3 Renderer::trace(const Ray &r, const int depth, const int max_depth,
 common::Image Renderer::render(const RayTracerSceneConfig &scene, std::ostream &out, const int number_of_threads)
 {
 
-    auto img = common::Image(scene.camera.screen_width_pixels, scene.camera.screen_height_pixels,
-                             scene.camera.color_channels, scene.is_grayscale);
+    auto img = common::Image(scene.camera.get_screen_width_pixels(), scene.camera.get_screen_height_pixels(),
+                             scene.camera.get_color_channels(), scene.is_grayscale);
 
     out << "Rendering the scene...\n";
     {
@@ -59,9 +59,9 @@ common::Image Renderer::render(const RayTracerSceneConfig &scene, std::ostream &
             while (true)
             {
                 const int current_row = finished_rows.load();
-                common::clear_current_stdout_row(out);
-                common::display_percentage(out, current_row, scene.camera.screen_height_pixels, "row");
-                if (current_row >= scene.camera.screen_height_pixels)
+                common::clear_current_row(out);
+                common::display_percentage(out, current_row, scene.camera.get_screen_height_pixels(), "row");
+                if (current_row >= scene.camera.get_screen_height_pixels())
                     return;
                 std::this_thread::sleep_for(STDOUT_REFRESH_INTERVAL);
             }
@@ -72,27 +72,28 @@ common::Image Renderer::render(const RayTracerSceneConfig &scene, std::ostream &
         for (int thread_idx = 0; thread_idx < number_of_threads; thread_idx++)
         {
             threads.emplace_back([&, thread_idx] {
-                for (int row = thread_idx; row < scene.camera.screen_height_pixels; row += number_of_threads)
+                for (int row = thread_idx; row < scene.camera.get_screen_height_pixels(); row += number_of_threads)
                 {
-                    for (int col = 0; col < scene.camera.screen_width_pixels; col++)
+                    for (int col = 0; col < scene.camera.get_screen_width_pixels(); col++)
                     {
                         auto pixel_color = common::Vec3(0, 0, 0);
 
-                        for (int k = 0; k < scene.camera.rays_per_pixel; k++)
+                        for (int k = 0; k < scene.camera.get_rays_per_pixel(); k++)
                         {
                             const Ray current_ray = scene.camera.compute_ray_for_pixel(Pixel(col, row));
-                            pixel_color += trace(current_ray, 0, scene.camera.max_recursion_depth, scene);
+                            pixel_color += trace(current_ray, 0, scene.camera.get_max_recursion_depth(), scene);
                         }
 
-                        img.draw(row, col, pixel_color / scene.camera.rays_per_pixel);
+                        img.draw(row, col, pixel_color / scene.camera.get_rays_per_pixel());
                     }
                     ++finished_rows;
                 }
             });
         }
     }
-    common::clear_current_stdout_row(out);
-    common::display_percentage(out, scene.camera.screen_height_pixels, scene.camera.screen_height_pixels, "row");
+    common::clear_current_row(out);
+    common::display_percentage(out, scene.camera.get_screen_height_pixels(), scene.camera.get_screen_height_pixels(),
+                               "row");
     return img;
 }
 } // namespace raytracer::raytracer

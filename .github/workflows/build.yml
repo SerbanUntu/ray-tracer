@@ -19,6 +19,26 @@ jobs:
           find apps common mandelbrot raytracer -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) -print0 \
             | xargs -0 --no-run-if-empty clang-format --dry-run --Werror
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang linter
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy
+
+      - name: Build
+        uses: ./.github/actions/build
+        with:
+          cc: clang
+          cxx: clang++
+          opt: 3
+
+      - name: Lint
+        run: |
+          find apps common mandelbrot raytracer -type f -name '*.cpp' -not -path '*/test/*' -print0 \
+            | xargs -0 --no-run-if-empty clang-tidy -p cmake-build-release/build/Release
+
   test:
     name: ${{ matrix.compiler }} -O${{ matrix.opt }}${{ matrix.fast_math && ' fast-math' || '' }}
     runs-on: ubuntu-latest
@@ -35,50 +55,16 @@ jobs:
           - compiler: clang
             cc: clang
             cxx: clang++
-    env:
-      CC: ${{ matrix.cc }}
-      CXX: ${{ matrix.cxx }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install clang linter
-        if: matrix.compiler == 'clang' && matrix.opt == 3 && !matrix.fast_math
-        run: sudo apt-get update && sudo apt-get install -y clang-tidy
-
-      - name: Install Conan
-        run: pip install conan
-
-      - name: Upgrade CMake
-        run: pip install --upgrade cmake
-
-      - name: Detect profile
-        run: conan profile detect --force
-
-      - name: Cache Conan packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.conan2/p
-          key: conan-linux-${{ matrix.compiler }}-${{ hashFiles('**/conanfile.txt') }}
-          restore-keys: |
-            conan-linux-${{ matrix.compiler }}-
-
-      - name: Install dependencies
-        run: conan install . --build=missing --output-folder=cmake-build-release
-
-      - name: Configure
-        run: >
-          cmake --preset conan-release
-          -DRAYTRACER_OPT_LEVEL=${{ matrix.opt }}
-          -DRAYTRACER_FAST_MATH=${{ matrix.fast_math && 'ON' || 'OFF' }}
-
       - name: Build
-        run: cmake --build --preset conan-release
-
-      - name: Lint
-        if: matrix.compiler == 'clang' && matrix.opt == 3 && !matrix.fast_math
-        run: |
-          find apps common mandelbrot raytracer -type f -name '*.cpp' -not -path '*/test/*' -print0 \
-            | xargs -0 --no-run-if-empty clang-tidy -p cmake-build-release/build/Release
+        uses: ./.github/actions/build
+        with:
+          cc: ${{ matrix.cc }}
+          cxx: ${{ matrix.cxx }}
+          opt: ${{ matrix.opt }}
+          fast-math: ${{ matrix.fast_math }}
 
       - name: Test
         run: ctest --test-dir cmake-build-release/build/Release --output-on-failure

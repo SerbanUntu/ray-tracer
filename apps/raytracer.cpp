@@ -28,19 +28,22 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Vec3, x, y, z)
 namespace raytracer::raytracer
 {
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Camera, screen_left_coord, screen_right_coord, screen_bottom_coord, screen_top_coord,
-                                   focal_length, origin, direction, world_up, screen_width_pixels, screen_height_pixels,
-                                   view_type, color_channels, rays_per_pixel, max_recursion_depth)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(RayTracerSceneConfig, background_color, sky_color, camera, objects,
                                    is_shading_thresholded, thresholded_shading_degrees, is_grayscale, output_path)
-NLOHMANN_JSON_SERIALIZE_ENUM(ViewType,
-                             {{ViewType::ORTHOGRAPHIC, "orthographic"}, {ViewType::PERSPECTIVE, "perspective"}})
 
 int main()
 {
     std::vector<std::unique_ptr<Object>> objects;
     objects.emplace_back(std::make_unique<Sphere>(std::make_unique<const Lambertian>(common::Vec3(1, 1, 0)),
-                                                  common::Vec3(0, -5, -20), 6));
+                                                  common::Vec3(6, -5, -20), 6));
+    objects.emplace_back(std::make_unique<Sphere>(std::make_unique<const Metal>(common::Vec3(0.4, 0.5, 0.6), 0.1),
+                                                  common::Vec3(-6, -5, -20), 6));
+    objects.emplace_back(
+        std::make_unique<Sphere>(std::make_unique<const LambertianTexture>(Cubemap(
+                                     common::Image(common::Vec3(1, 0, 0)), common::Image(common::Vec3(0, 1, 0)),
+                                     common::Image(common::Vec3(0, 0, 1)), common::Image(common::Vec3(1, 1, 0)),
+                                     common::Image(common::Vec3(0, 1, 1)), common::Image(common::Vec3(1, 0, 1)))),
+                                 common::Vec3(0, 10, -120), 20));
     objects.emplace_back(std::make_unique<Floor>(std::make_unique<const Metal>(common::Vec3(0.4, 0.4, 0.8), 0.6), -11));
 
     // Scene config
